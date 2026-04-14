@@ -1,0 +1,18 @@
+
+
+==== 2025-12-16T22:30:13-06:00 ====
+POST: {"t":"sadasd","c":"2","desc":"asdasdas"}
+FILES: {"adjuntos":{"name":[["ced1.jpg"],{"1":"ced2.jpg"},{"2":"WhatsApp Image 2022-08-06 at 1.43.01 PM.jpeg"}],"full_path":[["ced1.jpg"],{"1":"ced2.jpg"},{"2":"WhatsApp Image 2022-08-06 at 1.43.01 PM.jpeg"}],"type":[["image\/jpeg"],{"1":"image\/jpeg"},{"2":"image\/jpeg"}],"tmp_name":[["\/tmp\/phppQwIuV"],{"1":"\/tmp\/phprPRGh7"},{"2":"\/tmp\/phpgMnoQU"}],"error":[[0],{"1":0},{"2":0}],"size":[[1034031],{"1":1218287},{"2":225716}]}}
+uploadDir=/var/www/vhosts/lacallecr.com/lab.lacallecr.com/VV/apps/Forum/uploads/adjuntos/ exists=yes writable=yes
+FILE[0] name=ced1.jpg err=0 size=1034031 tmp=/tmp/phppQwIuV
+FILE[0] mime=image/jpeg
+FILE[0] move_uploaded_file => OK dest=/var/www/vhosts/lacallecr.com/lab.lacallecr.com/VV/apps/Forum/uploads/adjuntos/d40668ac9346f2087b772da5408f5828.jpg
+FILE[1] name=ced2.jpg err=0 size=1218287 tmp=/tmp/phprPRGh7
+FILE[1] mime=image/jpeg
+FILE[1] move_uploaded_file => OK dest=/var/www/vhosts/lacallecr.com/lab.lacallecr.com/VV/apps/Forum/uploads/adjuntos/037f6ea25ec3835a509d13470334ad2f.jpg
+FILE[2] name=WhatsApp Image 2022-08-06 at 1.43.01 PM.jpeg err=0 size=225716 tmp=/tmp/phpgMnoQU
+FILE[2] mime=image/jpeg
+FILE[2] move_uploaded_file => OK dest=/var/www/vhosts/lacallecr.com/lab.lacallecr.com/VV/apps/Forum/uploads/adjuntos/b14709c1edafd54f938414fc8ff62397.jpg
+==== 2025-12-17T00:51:57-06:00 ====
+POST: {"t":"EERE","c":"2","desc":"ERRE"}
+FILES: {"adjuntos":{"name":["ced2.jpg","PRMO.png"],"full_path":["ced2.jpg","PRMO.png"],"type":["image\/jpeg","image\/png"],"tmp_name":["\/tmp\/php5jg1Ka","\/tmp\/phpSUv1IZ"],"error":[0,0],"size":[283441,347288]}}
