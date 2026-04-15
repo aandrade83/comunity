@@ -19,15 +19,22 @@ function mostrarAlerta() {
     cerrarSesion();
     return;
   }
+
+  // Auto-redirect failsafe: si en 15 s el usuario no interactúa, redirige igual.
+  var _autoRedir = setTimeout(cerrarSesion, 15000);
+
   var opts = {
     title: "Inactividad detectada",
-    text: "Serás redirigido al inicio por inactividad",
-    confirmButtonText: "Ok",
+    text: "Serás redirigido al inicio en 15 segundos.",
+    confirmButtonText: "Ok, salir",
+    allowOutsideClick: false,
+    allowEscapeKey: false,
   };
   opts[_swalIconKey] = "warning";
-  Swal.fire(opts).then(function (result) {
-    // v7: result === true  |  v8+: result.isConfirmed === true
-    if (result === true || (result && result.isConfirmed)) cerrarSesion();
+
+  Swal.fire(opts).then(function () {
+    clearTimeout(_autoRedir);
+    cerrarSesion();
   });
 }
 
@@ -218,7 +225,7 @@ if (typeof window.jQuery !== "undefined") {
       dzTopic.on("queuecomplete", function () {
         if (!dzTopicLastOk) return;
         $("#btn_post").prop("disabled", true);
-        swalOk("¡PERFECTO!", "Tu Tema fue creado. Una vez aprobado por la comisión va a ser publicado.");
+        swalOk("¡PERFECTO!", "Tu Tema fue creado.");
         setTimeout(function () {
           window.location.href = VV.base + "index.php";
         }, 1500);
@@ -268,7 +275,7 @@ if (typeof window.jQuery !== "undefined") {
 
           if (String(data.control) === "1") {
             $("#btn_post").prop("disabled", true);
-            swalOk("¡PERFECTO!", "Tu Tema fue creado. Una vez aprobado por la comisión va a ser publicado.");
+            swalOk("¡PERFECTO!", "Tu Tema fue creado");
             setTimeout(function () {
               window.location.href = VV.base + "index.php";
             }, 1500);

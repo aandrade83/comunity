@@ -17,3 +17,6 @@ node_modules/
 
 # PHP vendor (si usas composer)
 vendor/
+# Uploads (NO subir)
+app/VV/apps/Actividades/uploads/
+app/VV/apps/Services/uploads/

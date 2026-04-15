@@ -1,9 +1,9 @@
 <?php
+ob_start();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/VV/utilities/includes.php';
 require_once ROOT_PATH . '/apps/Encuesta/db.php';
 session_start();
 
-ob_start();
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
 

@@ -86,6 +86,8 @@ if (!$isForum && !$isServices && !$isEncuesta && !$isActividades) $isForum = tru
 
   <!-- Preview adjuntos (NO toca functions.js) -->
   <script src="../ui/js/adjuntos_preview.js"></script>
+  <!-- Lightbox con galería y flechas -->
+  <script src="../ui/js/vv-lightbox.js"></script>
 
   <!-- Select2 (solo para Services) -->
   <?php if ($isServices): ?>

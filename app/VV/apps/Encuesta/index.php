@@ -106,6 +106,9 @@ unset($sv);
                                 <?php if ($sv['show_results']): ?>
                                     <span class="enc-badge enc-badge-results">Resultados visibles</span>
                                 <?php endif; ?>
+                                <?php if ($sv['user_answered']): ?>
+                                    <span class="enc-badge enc-badge-answered">Ya respondió</span>
+                                <?php endif; ?>
                             <?php else: ?>
                                 <?php if ($sv['user_answered']): ?>
                                     <span class="enc-badge enc-badge-answered">Ya respondió</span>
@@ -155,6 +158,13 @@ unset($sv);
                                 <?php if ($sv['response_count'] > 0): ?>
                                     <a href="survey_results.php?id=<?= (int)$sv['id'] ?>" class="btn btn-xs btn-primary">
                                         <i class="fa fa-bar-chart"></i> Ver resultados
+                                    </a>
+                                <?php endif; ?>
+
+                                <!-- Responder (comisión también puede participar en encuestas activas) -->
+                                <?php if ($sv['status'] && !$sv['user_answered']): ?>
+                                    <a href="survey_answer.php?id=<?= (int)$sv['id'] ?>" class="btn btn-xs btn-success">
+                                        <i class="fa fa-pencil-square-o"></i> Responder
                                     </a>
                                 <?php endif; ?>
 

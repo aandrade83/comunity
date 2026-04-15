@@ -155,16 +155,6 @@ $already_answered = $filial !== '' ? (enc_get_response($survey_id, $filial) !== 
                         <?php endif; ?>
                     </div>
 
-                <?php elseif ($comision): ?>
-
-                    <div class="alert alert-info">
-                        <i class="fa fa-info-circle"></i> Modo vista previa (comisión). Su respuesta no será registrada.
-                    </div>
-
-                    <?php foreach ($survey['questions'] as $q): ?>
-                        <?= renderQuestion($q, true) ?>
-                    <?php endforeach; ?>
-
                 <?php else: ?>
 
                     <p style="color:#555; font-size:13px; margin-bottom:16px;">

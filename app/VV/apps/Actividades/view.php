@@ -101,9 +101,11 @@ $can_part    = ($act['fecha'] > $today); // solo eventos futuros
                             <?php foreach ($adjuntos as $adj): ?>
                                 <?php $url = act_upload_url() . htmlspecialchars($adj['archivo'], ENT_QUOTES, 'UTF-8'); ?>
                                 <?php if ($adj['tipo'] === 'imagen'): ?>
-                                    <a href="<?= $url ?>" target="_blank"><img src="<?= $url ?>" class="adj-img" alt="imagen"></a>
+                                    <a href="<?= $url ?>" class="vv-attach-img" title="<?= htmlspecialchars($adj['archivo'], ENT_QUOTES, 'UTF-8') ?>" data-download="<?= $url ?>">
+                                        <img src="<?= $url ?>" class="adj-img" alt="imagen">
+                                    </a>
                                 <?php else: ?>
-                                    <a href="<?= $url ?>" target="_blank" class="adj-pdf">
+                                    <a href="<?= $url ?>" class="vv-attach-pdf adj-pdf">
                                         <i class="fa fa-file-pdf-o fa-2x" style="color:#c0392b;"></i>
                                         <?= htmlspecialchars($adj['archivo'], ENT_QUOTES, 'UTF-8') ?>
                                     </a>
@@ -202,9 +204,11 @@ $can_part    = ($act['fecha'] > $today); // solo eventos futuros
                                     <?php foreach ($c['adjuntos'] as $adj): ?>
                                         <?php $url = act_upload_url() . htmlspecialchars($adj['archivo'], ENT_QUOTES, 'UTF-8'); ?>
                                         <?php if ($adj['tipo'] === 'imagen'): ?>
-                                            <a href="<?= $url ?>" target="_blank"><img src="<?= $url ?>" class="adj-img" alt="imagen"></a>
+                                            <a href="<?= $url ?>" class="vv-attach-img" title="<?= htmlspecialchars($adj['archivo'], ENT_QUOTES, 'UTF-8') ?>" data-download="<?= $url ?>">
+                                                <img src="<?= $url ?>" class="adj-img" alt="imagen">
+                                            </a>
                                         <?php else: ?>
-                                            <a href="<?= $url ?>" target="_blank" class="adj-pdf">
+                                            <a href="<?= $url ?>" class="vv-attach-pdf adj-pdf">
                                                 <i class="fa fa-file-pdf-o"></i>
                                                 <?= htmlspecialchars($adj['archivo'], ENT_QUOTES, 'UTF-8') ?>
                                             </a>

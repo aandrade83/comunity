@@ -82,16 +82,22 @@ function render_adjuntos_block($adjuntosList, $title = 'Adjuntos'){
 
     echo '<div class="adj-item" style="width:130px;">';
 
-    // Imagen => miniatura clickeable
+    // Imagen => miniatura con Magnific Popup gallery
     if (is_img_mime($mime)) {
-      echo '<a href="javascript:void(0)" class="adj-open" data-url="'.$dataUrl.'" data-mime="'.$dataMime.'" data-name="'.$dataName.'" data-ext="'.$dataExt.'" style="text-decoration:none;">';
+      echo '<a href="'.$dataUrl.'" class="vv-attach-img" title="'.$dataName.'" data-download="'.$dataUrl.'" style="text-decoration:none; display:block;">';
       echo '<img src="'.$dataUrl.'" alt="'.$dataName.'" style="width:130px; height:90px; object-fit:cover; border-radius:8px; border:1px solid #e6e6e6;">';
       echo '</a>';
       echo '<div style="font-size:12px; margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="'.$dataName.'">'.$dataName.'</div>';
-    } else {
-      // No imagen => tarjeta simple (abre modal igual)
+    } elseif (is_pdf_mime($mime) || strtolower($ext) === 'pdf') {
       echo '<div style="border:1px solid #e6e6e6; border-radius:8px; padding:10px; height:90px; display:flex; align-items:center; justify-content:center; background:#fafafa;">';
-      echo '<a href="javascript:void(0)" class="adj-open" data-url="'.$dataUrl.'" data-mime="'.$dataMime.'" data-name="'.$dataName.'" data-ext="'.$dataExt.'" style="text-decoration:none; font-size:12px; text-align:center;">';
+      echo '<a href="'.$dataUrl.'" class="vv-attach-pdf" style="text-decoration:none; font-size:12px; text-align:center; color:#c0392b;">';
+      echo '<i class="fa fa-file-pdf-o" style="font-size:28px; display:block; margin-bottom:4px;"></i>';
+      echo esc($dataName);
+      echo '</a>';
+      echo '</div>';
+    } else {
+      echo '<div style="border:1px solid #e6e6e6; border-radius:8px; padding:10px; height:90px; display:flex; align-items:center; justify-content:center; background:#fafafa;">';
+      echo '<a href="'.$dataUrl.'" class="vv-attach-file" target="_blank" style="text-decoration:none; font-size:12px; text-align:center;">';
       echo esc($ext ? strtoupper($ext) : 'FILE');
       echo '</a>';
       echo '</div>';
@@ -325,87 +331,6 @@ function render_adjuntos_block($adjuntosList, $title = 'Adjuntos'){
   </div>
 </section>
 
-<!-- ✅ Modal Preview (Bootstrap) -->
-<div class="modal fade" id="adjPreviewModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="adjPreviewTitle" style="margin:0;">Archivo</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-
-      <div class="modal-body" style="min-height:300px;">
-        <img id="adjPreviewImg" src="" alt="" style="max-width:100%; display:none; margin:auto;">
-        <iframe id="adjPreviewFrame" src="" style="width:100%; height:65vh; border:0; display:none;"></iframe>
-        <div id="adjPreviewGeneric" style="display:none;">
-          <p>Este archivo no tiene vista previa.</p>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <a id="adjPreviewDownload" class="btn btn-primary" href="#" download>Descargar</a>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>viewControl()</script>
-
-<script>
-// Preview sin tocar functions.js (vanilla)
-(function(){
-  function showModal(name, url, mime, ext){
-    document.getElementById('adjPreviewTitle').textContent = name || 'Archivo';
-    var img = document.getElementById('adjPreviewImg');
-    var frame = document.getElementById('adjPreviewFrame');
-    var generic = document.getElementById('adjPreviewGeneric');
-    var dl = document.getElementById('adjPreviewDownload');
-
-    img.style.display = 'none';
-    frame.style.display = 'none';
-    generic.style.display = 'none';
-
-    dl.href = url;
-
-    // Imagen => <img>
-    if (mime && mime.indexOf('image/') === 0) {
-      img.src = url;
-      img.style.display = 'block';
-    }
-    // PDF => iframe
-    else if (mime === 'application/pdf' || (ext && String(ext).toLowerCase() === 'pdf')) {
-      frame.src = url;
-      frame.style.display = 'block';
-    }
-    // Otros => sin preview
-    else {
-      generic.style.display = 'block';
-    }
-
-    // Bootstrap modal
-    if (window.jQuery && jQuery.fn && jQuery.fn.modal) {
-      jQuery('#adjPreviewModal').modal('show');
-    } else {
-      // fallback: abrir en nueva pestaña si no hay modal
-      window.open(url, '_blank');
-    }
-  }
-
-  document.addEventListener('click', function(e){
-    var a = e.target.closest('.adj-open');
-    if (!a) return;
-    e.preventDefault();
-    showModal(
-      a.getAttribute('data-name'),
-      a.getAttribute('data-url'),
-      a.getAttribute('data-mime'),
-      a.getAttribute('data-ext')
-    );
-  });
-})();
-</script>
 
 <? include('../ui/partials/footer.php'); ?>

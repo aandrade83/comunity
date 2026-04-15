@@ -1,8 +1,7 @@
 <?php
+ob_start();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/VV/utilities/includes.php';
 require_once ROOT_PATH . '/apps/Actividades/db.php';
-
-ob_start();
 
 function json_exit(array $data, int $code = 200): void {
     if (ob_get_length()) ob_clean();

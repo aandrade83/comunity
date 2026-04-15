@@ -36,17 +36,21 @@ function render_adj_svc($adjuntosList, $title = 'Adjuntos') {
     $orig = $vars['nombre_original'] ?? 'archivo';
     $file = $vars['nombre_archivo'] ?? '';
     $mime = $vars['mime_type'] ?? '';
-    $ext  = $vars['extension'] ?? '';
+    $ext  = strtolower((string)($vars['extension'] ?? ''));
     if (!$file) continue;
     $url = adj_url_svc($file);
     echo '<div class="adj-item" style="width:130px;">';
     if (is_img_mime($mime)) {
-      echo '<a href="javascript:void(0)" class="adj-open" data-url="'.esc($url).'" data-mime="'.esc($mime).'" data-name="'.esc($orig).'" data-ext="'.esc($ext).'" style="text-decoration:none;">';
+      echo '<a href="'.esc($url).'" class="vv-attach-img" title="'.esc($orig).'" style="text-decoration:none; display:block;">';
       echo '<img src="'.esc($url).'" alt="'.esc($orig).'" style="width:130px; height:90px; object-fit:cover; border-radius:8px; border:1px solid #e6e6e6;">';
       echo '</a>';
+    } elseif ($mime === 'application/pdf' || $ext === 'pdf') {
+      echo '<div style="border:1px solid #e6e6e6; border-radius:8px; padding:10px; height:90px; display:flex; align-items:center; justify-content:center; background:#fafafa;">';
+      echo '<a href="'.esc($url).'" class="vv-attach-pdf" title="'.esc($orig).'" style="text-decoration:none; font-size:12px; text-align:center;">PDF</a>';
+      echo '</div>';
     } else {
       echo '<div style="border:1px solid #e6e6e6; border-radius:8px; padding:10px; height:90px; display:flex; align-items:center; justify-content:center; background:#fafafa;">';
-      echo '<a href="javascript:void(0)" class="adj-open" data-url="'.esc($url).'" data-mime="'.esc($mime).'" data-name="'.esc($orig).'" data-ext="'.esc($ext).'" style="text-decoration:none; font-size:12px; text-align:center;">';
+      echo '<a href="'.esc($url).'" class="vv-attach-file" title="'.esc($orig).'" style="text-decoration:none; font-size:12px; text-align:center;">';
       echo esc($ext ? strtoupper($ext) : 'FILE');
       echo '</a></div>';
     }
@@ -266,63 +270,5 @@ function render_adj_svc($adjuntosList, $title = 'Adjuntos') {
     </div>
   </div>
 </section>
-
-<!-- Modal Preview -->
-<div class="modal fade" id="adjPreviewModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="adjPreviewTitle" style="margin:0;">Archivo</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body" style="min-height:300px;">
-        <img id="adjPreviewImg" src="" alt="" style="max-width:100%; display:none; margin:auto;">
-        <iframe id="adjPreviewFrame" src="" style="width:100%; height:65vh; border:0; display:none;"></iframe>
-        <div id="adjPreviewGeneric" style="display:none;"><p>Este archivo no tiene vista previa.</p></div>
-      </div>
-      <div class="modal-footer">
-        <a id="adjPreviewDownload" class="btn btn-primary" href="#" download>Descargar</a>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-(function(){
-  function showModal(name, url, mime, ext){
-    document.getElementById('adjPreviewTitle').textContent = name || 'Archivo';
-    var img = document.getElementById('adjPreviewImg');
-    var frame = document.getElementById('adjPreviewFrame');
-    var generic = document.getElementById('adjPreviewGeneric');
-    var dl = document.getElementById('adjPreviewDownload');
-    img.style.display = 'none';
-    frame.style.display = 'none';
-    generic.style.display = 'none';
-    dl.href = url;
-    if (mime && mime.indexOf('image/') === 0) {
-      img.src = url; img.style.display = 'block';
-    } else if (mime === 'application/pdf' || (ext && String(ext).toLowerCase() === 'pdf')) {
-      frame.src = url; frame.style.display = 'block';
-    } else {
-      generic.style.display = 'block';
-    }
-    if (window.jQuery && jQuery.fn && jQuery.fn.modal) {
-      jQuery('#adjPreviewModal').modal('show');
-    } else {
-      window.open(url, '_blank');
-    }
-  }
-  document.addEventListener('click', function(e){
-    var a = e.target.closest('.adj-open');
-    if (!a) return;
-    e.preventDefault();
-    showModal(a.getAttribute('data-name'), a.getAttribute('data-url'),
-              a.getAttribute('data-mime'), a.getAttribute('data-ext'));
-  });
-})();
-</script>
 
 <?php include('../ui/partials/footer.php'); ?>
