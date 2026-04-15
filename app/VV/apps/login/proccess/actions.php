@@ -5,17 +5,24 @@
 require_once($_SERVER['DOCUMENT_ROOT']."/VV/utilities/includes.php");
 
 $user      = param("user");
-$pass      = param("pass");
-$action  =   param("ac");
+$pass_raw  = param("pass");   // valor limpio antes de encriptar (para validar vacío)
+$action    = param("ac");
 
-
-$pass = biencript($pass);
+$pass = biencript($pass_raw);
 
 switch ($action){
 
 
   case "login":
-  
+
+   // Validar credenciales vacías ANTES de consultar la DB.
+   // secure_input() elimina caracteres no permitidos (ej. *), dejando cadenas vacías.
+   if (empty(trim($user)) || empty(trim($pass_raw))) {
+       $data['login'] = "2";
+       echo json_encode($data);
+       break;
+   }
+
    $login = get_master_login($user,$pass);
    $total = 0;
   

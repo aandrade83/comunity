@@ -1,87 +1,65 @@
-<?
- include('../ui/main_head.php');
-?>
+<?php
+include('../ui/main_head.php');
+require_once ROOT_PATH . '/apps/Encuesta/db.php';
 
-<style>
+$filial   = $_SESSION['filial'] ?? '';
+$comision = isset($_SESSION['rol']) && (int)$_SESSION['rol'] === 2;
 
-/* ===== OCULTAR SIDE EN MOBILE ===== */
-@media (max-width: 768px) {
-    #side,
-    .side,
-    .sidebar,
-    .rightcol,
-    .col-right {
-        display: none !important;
-    }
+// Load surveys: commission sees all, filials see only active
+if ($comision) {
+    $surveys = enc_rows('SELECT * FROM surveys ORDER BY id DESC');
+} else {
+    $surveys = enc_rows('SELECT * FROM surveys WHERE status = 1 ORDER BY id DESC');
 }
 
-
-</style>
-
-
-<?
- $encuestas = get_encuestas(1);
+// For each survey, attach response count and whether this filial answered
+foreach ($surveys as &$sv) {
+    $sv['response_count'] = enc_response_count((int)$sv['id']);
+    $sv['user_answered']  = ($filial !== '') ? (enc_get_response((int)$sv['id'], $filial) !== null) : false;
+}
+unset($sv);
 ?>
 
 <style>
-    /* ====== ESTILOS ENCUESTAS (mover luego a tu CSS) ====== */
-    .encuestas-title-page {
-        margin-top: 20px;
-        margin-bottom: 20px;
-        font-weight: 600;
-    }
+@media (max-width: 768px) {
+    #side, .side, .sidebar, .rightcol, .col-right { display: none !important; }
+}
+.enc-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 6px;
+}
+.enc-badge-active   { background:#dff0d8; color:#3c763d; }
+.enc-badge-inactive { background:#f2dede; color:#a94442; }
+.enc-badge-answered { background:#d9edf7; color:#31708f; }
+.enc-badge-results  { background:#fcf8e3; color:#8a6d3b; }
 
-    .encuesta-box {
-        background: #ffffff;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        padding: 15px 20px;
-        margin-bottom: 15px;
-    }
-
-    .encuesta-box h4 {
-        margin-top: 0;
-        margin-bottom: 12px; /* espacio entre título y slider */
-        font-size: 16px;
-        font-weight: 600;
-    }
-
-    .encuesta-detalle {
-        margin-bottom: 8px;
-        color: #666;
-        font-size: 13px;
-    }
-
-    .encuesta-slider-row {
-        display: flex;
-        justify-content: center;
-        margin: 8px 0 10px 0;
-    }
-
-    .encuesta-slider-inner {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        width: 50%; /* barra a la mitad del ancho */
-        min-width: 260px;
-    }
-
-    .encuesta-slider {
-        flex: 1;
-    }
-
-    .slider-value {
-        min-width: 45px;
-        text-align: right;
-        font-weight: 600;
-        font-size: 13px;
-    }
-
-    .encuesta-btn-row {
-        text-align: center;
-        margin-bottom: 5px;
-    }
+.encuesta-box {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+}
+.encuesta-box h4 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+.encuesta-box .meta {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 10px;
+}
+.encuesta-box .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
 </style>
 
 <section class="content">
@@ -90,254 +68,185 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-8 breadcrumbf">
-                <a href="https://lab.lacallecr.com/VV/apps/Forum/index.php">Inicio</a>
+                <a href="<?= BASE_URL ?>/apps/Forum/index.php">Inicio</a>
                 <span class="diviver"></span>
                 ENCUESTAS
             </div>
         </div>
     </div>
 
-    <!-- LISTA DE ENCUESTAS -->
-    <div class="container" id="encuestasContainer"
-         data-user-id="<? echo isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0; ?>">
+    <div class="container">
         <div class="row">
 
             <div class="col-lg-8 col-md-8 col-xs-12">
 
-                <h3 class="encuestas-title-page">ENCUESTAS</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <h3 style="margin:0;">ENCUESTAS</h3>
+                    <?php if ($comision): ?>
+                        <a href="survey_create.php" class="btn btn-success">
+                            <i class="fa fa-plus"></i> Nueva Encuesta
+                        </a>
+                    <?php endif; ?>
+                </div>
 
-                 <div class="alert alert-info" style="margin-top:15px;">
-        <strong>Encuesta del Desarrollador</strong><br>
-        Favor llenar la siguiente encuesta.
-        <br><br>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSc5lhgvoGU_Ro3mZwHrnn8nsfySSMr22MfBeEid7vQnf10FYA/viewform?usp=publish-editor" 
-           target="_blank" 
-           class="btn btn-primary">
-           Ir a la Encuesta
-        </a>
-    </div>
-    
-                <p>Su respuesta es anónima y será utilizada únicamente con fines de mejora continua.</p>
-
-                <? if (!empty($encuestas)) { ?>
-
-                    <? foreach ($encuestas as $enc) { 
-
-                        $done = false;
-
-                        $user_resp = get_resp_encuesta_user($filial,$enc->vars['id']);
-                        $resp = get_resp_encuesta($enc->vars['id']);
-
-                         if (is_array($user_resp) && array_key_exists('id_user', $user_resp)) {
-                            if ((int)$user_resp['id_user'] === (int)$filial) {
-                                $done = true;
-                            }
-                        }
-
-
-
-                        if (!empty($resp) && is_array($resp)) {
-
-                            $result['total'] = count($resp);
-
-                            $suma = 0;
-
-                    foreach ($resp as $r) {
-                        if (isset($r['detalle'])) {
-                        $suma += (float)$r['detalle'];
-                        }
-                    }
-
-                    if ($result['total'] > 0) {
-                        $result['avg'] = round($suma / $result['total'], 2);
-                    }
-                  }
-
-                        // print_r($user_resp);
-                         //print_r($resp);
-
-                        ?>
-
-                        <div class="post encuesta-box"
-                             data-encuesta-id="<? echo $enc->vars['id']; ?>">
-
-                            <h4><? echo $enc->vars['titulo']; ?></h4>
-
-                            <? /* if (!empty($enc->vars['detalle'])) { ?>
-                                <p class="encuesta-detalle">
-                                    <? echo $enc->vars['detalle']; ?>
-                                </p>
-                            <? } */ ?>
-
-                      <!-- SLIDER + PORCENTAJE EN UNA SOLA LÍNEA -->
-<div class="encuesta-slider-row">
-    <div class="encuesta-slider-inner">
-
-        <input type="range"
-               min="0"
-               max="100"
-               value="<? echo $done ? (int)$result['avg'] : 50; ?>"
-               class="encuesta-slider"
-               <? if ($done) echo 'disabled'; ?>
-               oninput="updateSliderValue(this)">
-
-        <span class="slider-value">
-            <? if ($done) { ?>
-                <? echo (int)$result['avg']; ?>%
-                (<? echo (int)$result['total']; ?> filiales)
-            <? } else { ?>
-                50%
-            <? } ?>
-        </span>
-
-    </div>
-</div>
-
-<!-- BOTÓN GUARDAR (solo si NO está done) -->
-<? if (!$done) { ?>
-    <div class="encuesta-btn-row">
-        <button type="button"
-                class="btn btn-success btn-guardar-encuesta"
-                onclick="confirmGuardarEncuesta(this)">
-            Guardar
-        </button>
-    </div>
-<? } ?>
-
-                        </div><!-- /.encuesta-box -->
-
-                    <? } ?>
-
-                <? } else { ?>
-
-                    <div class="post encuesta-box">
+                <?php if (empty($surveys)): ?>
+                    <div class="encuesta-box">
                         <h4>No hay encuestas disponibles</h4>
-                        <p class="encuesta-detalle">
-                            En este momento no hay encuestas activas.
-                        </p>
+                        <p class="meta">En este momento no hay encuestas activas.</p>
                     </div>
+                <?php else: ?>
+                    <?php foreach ($surveys as $sv): ?>
+                    <div class="encuesta-box">
+                        <h4>
+                            <?= htmlspecialchars($sv['title'], ENT_QUOTES, 'UTF-8') ?>
+                            <?php if ($comision): ?>
+                                <span class="enc-badge <?= $sv['status'] ? 'enc-badge-active' : 'enc-badge-inactive' ?>">
+                                    <?= $sv['status'] ? 'Activa' : 'Inactiva' ?>
+                                </span>
+                                <?php if ($sv['show_results']): ?>
+                                    <span class="enc-badge enc-badge-results">Resultados visibles</span>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <?php if ($sv['user_answered']): ?>
+                                    <span class="enc-badge enc-badge-answered">Ya respondió</span>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </h4>
 
-                <? } ?>
+                        <?php if (!empty($sv['description'])): ?>
+                            <p class="meta"><?= htmlspecialchars($sv['description'], ENT_QUOTES, 'UTF-8') ?></p>
+                        <?php endif; ?>
+
+                        <?php if ($comision): ?>
+                            <p class="meta"><?= $sv['response_count'] ?> respuesta(s) &nbsp;|&nbsp; Creada: <?= htmlspecialchars($sv['created_at'], ENT_QUOTES, 'UTF-8') ?></p>
+                        <?php endif; ?>
+
+                        <div class="btn-row">
+                            <?php if ($comision): ?>
+                                <!-- Edit only if no responses yet -->
+                                <?php if ($sv['response_count'] == 0): ?>
+                                    <a href="survey_create.php?id=<?= (int)$sv['id'] ?>" class="btn btn-xs btn-default">
+                                        <i class="fa fa-pencil"></i> Editar
+                                    </a>
+                                <?php endif; ?>
+
+                                <!-- Activate / Deactivate -->
+                                <?php if ($sv['status']): ?>
+                                    <button class="btn btn-xs btn-warning btn-enc-action"
+                                            data-id="<?= (int)$sv['id'] ?>" data-ac="deactivate">
+                                        <i class="fa fa-pause"></i> Desactivar
+                                    </button>
+                                <?php else: ?>
+                                    <button class="btn btn-xs btn-success btn-enc-action"
+                                            data-id="<?= (int)$sv['id'] ?>" data-ac="activate">
+                                        <i class="fa fa-play"></i> Activar
+                                    </button>
+                                <?php endif; ?>
+
+                                <!-- Toggle results visibility -->
+                                <button class="btn btn-xs btn-<?= $sv['show_results'] ? 'info' : 'default' ?> btn-enc-action"
+                                        data-id="<?= (int)$sv['id'] ?>" data-ac="toggle_results"
+                                        title="<?= $sv['show_results'] ? 'Ocultar resultados a filiales' : 'Mostrar resultados a filiales' ?>">
+                                    <i class="fa fa-<?= $sv['show_results'] ? 'eye' : 'eye-slash' ?>"></i>
+                                    <?= $sv['show_results'] ? 'Ocultar resultados' : 'Publicar resultados' ?>
+                                </button>
+
+                                <!-- View results -->
+                                <?php if ($sv['response_count'] > 0): ?>
+                                    <a href="survey_results.php?id=<?= (int)$sv['id'] ?>" class="btn btn-xs btn-primary">
+                                        <i class="fa fa-bar-chart"></i> Ver resultados
+                                    </a>
+                                <?php endif; ?>
+
+                                <!-- Delete -->
+                                <button class="btn btn-xs btn-danger btn-enc-delete"
+                                        data-id="<?= (int)$sv['id'] ?>"
+                                        data-responses="<?= (int)$sv['response_count'] ?>">
+                                    <i class="fa fa-trash"></i> Eliminar
+                                </button>
+
+                            <?php else: ?>
+                                <!-- Regular filial -->
+                                <?php if (!$sv['user_answered']): ?>
+                                    <a href="survey_answer.php?id=<?= (int)$sv['id'] ?>" class="btn btn-xs btn-success">
+                                        <i class="fa fa-pencil-square-o"></i> Responder
+                                    </a>
+                                <?php elseif ($sv['show_results']): ?>
+                                    <a href="survey_results.php?id=<?= (int)$sv['id'] ?>" class="btn btn-xs btn-primary">
+                                        <i class="fa fa-bar-chart"></i> Ver resultados
+                                    </a>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
 
             </div>
 
-            <?
-            include('../ui/partials/side.php');
-            ?>
+<script>
+// Action buttons (activate/deactivate/toggle_results)
+document.querySelectorAll('.btn-enc-action').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var id = this.dataset.id;
+        var ac = this.dataset.ac;
+        fetch('actions/actions.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'ac=' + encodeURIComponent(ac) + '&id=' + encodeURIComponent(id)
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(resp) {
+            if (resp.ok) {
+                location.reload();
+            } else {
+                alert(resp.error || 'Error');
+            }
+        });
+    });
+});
 
+// Delete buttons
+document.querySelectorAll('.btn-enc-delete').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var id        = this.dataset.id;
+        var responses = parseInt(this.dataset.responses, 10);
+
+        var opts = {
+            title: responses > 0
+                ? 'Esta encuesta tiene ' + responses + ' respuesta(s). ¿Eliminar de todas formas?'
+                : '¿Eliminar esta encuesta?',
+            text: 'Esta acción no se puede deshacer.',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        };
+        opts[_swalIconKey] = 'warning';
+
+        Swal.fire(opts).then(function(result) {
+            if (result !== true && !(result && result.isConfirmed)) return;
+            fetch('actions/actions.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'ac=delete&id=' + encodeURIComponent(id)
+            })
+            .then(function(r){ return r.json(); })
+            .then(function(resp) {
+                if (resp.ok) {
+                    location.reload();
+                } else {
+                    alert(resp.error || 'Error al eliminar');
+                }
+            });
+        });
+    });
+});
+</script>
+
+            <?php try { include('../ui/partials/side.php'); } catch (\Throwable $e) { /* sidebar no crítico */ } ?>
         </div>
     </div>
 
 </section>
 
-
-<script>
-    /**
-     * Actualiza el porcentaje al mover la barra
-     */
-    function updateSliderValue(slider) {
-        const value = slider.value;
-        const valueLabel = slider.parentElement.querySelector('.slider-value');
-        if (valueLabel) {
-            valueLabel.innerText = value + '%';
-        }
-    }
-
-    /**
-     * Obtiene el user desde la sesión embebida en el contenedor
-     * (solo para debug visual)
-     */
-    function getCurrentUserId() {
-        const container = document.getElementById('encuestasContainer');
-        if (!container) return null;
-        return container.getAttribute('data-user-id');
-    }
-
-    /**
-     * Confirmar y enviar encuesta
-     */
-    function confirmGuardarEncuesta(button) {
-
-        const encuestaBox = button.closest('.encuesta-box');
-        if (!encuestaBox) return;
-
-        const slider = encuestaBox.querySelector('.encuesta-slider');
-        if (!slider) return;
-
-        const encuestaId = encuestaBox.getAttribute('data-encuesta-id');
-        const valor = slider.value;
-        const userId = getCurrentUserId(); // solo debug
-
-        // 🔍 DEBUG ANTES DE ENVIAR
-        console.log('PREPARANDO ENVÍO ENCUESTA', {
-            ac: 'enc',
-            encuestaId: encuestaId,
-            valor: valor,
-            userId: userId
-        });
-
-        Swal.fire({
-            title: '¿Está seguro?',
-            text: 'Una vez guardada la respuesta no podrá ser editada.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, guardar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-
-            if (!result.isConfirmed) return;
-
-            // 🚀 AJAX
-            $.ajax({
-                url: 'actions/actions.php',
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    ac: 'enc',
-                    encuestaId: encuestaId,
-                    valor: valor
-                },
-                success: function (resp) {
-
-                    console.log('RESPUESTA BACKEND', resp);
-
-                    if (resp.control == '1') {
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Gracias',
-                            text: 'Su respuesta fue guardada correctamente'
-                        }).then(() => {
-                            // 🔄 REFRESCAR PÁGINA
-                            location.reload();
-                        });
-
-                    } else {
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: resp.error || 'No se pudo guardar la encuesta'
-                        });
-                    }
-                },
-                error: function (xhr, status, error) {
-
-                    console.error('ERROR AJAX', error);
-
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Error de comunicación con el servidor'
-                    });
-                }
-            });
-
-        });
-    }
-</script>
-
-<?
- include('../ui/partials/footer.php');
-?>
-
+<?php include('../ui/partials/footer.php'); ?>

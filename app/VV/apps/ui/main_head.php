@@ -10,7 +10,7 @@ $filial  = $_SESSION['filial'] ?? '';
 $id_user = $_SESSION['user'] ?? 0;
 
 if (empty($id_user)) {
-    header("Location: https://lab.lacallecr.com/");
+    header("Location: /VV/");
     exit;
 }
 
@@ -24,16 +24,17 @@ require_once($_SERVER['DOCUMENT_ROOT'] . "/VV/utilities/includes.php");
 $Categorias = get_all_categorias();
 $total      = get_total_categoria();
 
-$rutahead = "https://lab.lacallecr.com/VV/utilities/tema";
+$rutahead = ASSETS_URL; // definido en config.php, auto-detecta el ambiente
 
 // Detectar en cuál módulo estamos (para tabs + mostrar/ocultar búsqueda y crear tema)
 $uri = $_SERVER['REQUEST_URI'] ?? '';
-$isForum    = (strpos($uri, '/VV/apps/Forum/') !== false);
-$isServices = (strpos($uri, '/VV/apps/Services/') !== false);
-$isEncuesta = (strpos($uri, '/VV/apps/Encuesta/') !== false);
+$isForum       = (strpos($uri, '/VV/apps/Forum/') !== false);
+$isServices    = (strpos($uri, '/VV/apps/Services/') !== false);
+$isEncuesta    = (strpos($uri, '/VV/apps/Encuesta/') !== false);
+$isActividades = (strpos($uri, '/VV/apps/Actividades/') !== false);
 
 // Fallback: si no calza nada, asumimos Foro
-if (!$isForum && !$isServices) $isForum = true;
+if (!$isForum && !$isServices && !$isEncuesta && !$isActividades) $isForum = true;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -63,18 +64,21 @@ if (!$isForum && !$isServices) $isForum = true;
   <!-- SLIDER REVOLUTION 4.x CSS SETTINGS -->
   <link rel="stylesheet" type="text/css" href="../ui/rs-plugin/css/settings.css" media="screen" />
 
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.js"></script>
+  <!-- Contexto de ambiente — disponible en todo el JS como BASE_URL -->
+  <script>var BASE_URL = "<?= BASE_URL ?>";</script>
+  <script type="text/javascript" src="<?= BASE_URL ?>/utilities/includes/js/jquery.js"></script>
   <script src="../ui/js/bootstrap.min.js"></script>
 
-  <!-- SweetAlert2 -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+  <!-- SweetAlert2 (local) -->
+  <script src="<?= ASSETS_URL ?>/libs/sweetalert2/sweetalert2.min.js"></script>
+  <link href="<?= ASSETS_URL ?>/libs/sweetalert2/sweetalert2.min.css" rel="stylesheet">
 
   <!-- Dropzone -->
   <link rel="stylesheet" href="<?php echo $rutahead; ?>/libs/dropzone/dropzone.min.css">
   <script src="<?php echo $rutahead; ?>/libs/dropzone/dropzone.min.js"></script>
 
   <!-- App JS -->
-  <script type="text/javascript" src="../ui/js/functions.js"></script>
+  <script type="text/javascript" src="<?= BASE_URL ?>/apps/ui/js/functions.js?v=<?= filemtime(ROOT_PATH . '/apps/ui/js/functions.js') ?>"></script>
 
   <!-- Magnific Popup -->
   <link rel="stylesheet" href="<?php echo $rutahead; ?>/libs/magnific-popup/magnific-popup.css" />
@@ -82,6 +86,12 @@ if (!$isForum && !$isServices) $isForum = true;
 
   <!-- Preview adjuntos (NO toca functions.js) -->
   <script src="../ui/js/adjuntos_preview.js"></script>
+
+  <!-- Select2 (solo para Services) -->
+  <?php if ($isServices): ?>
+  <link href="<?= ASSETS_URL ?>/libs/select2/select2.min.css" rel="stylesheet">
+  <script src="<?= ASSETS_URL ?>/libs/select2/select2.min.js"></script>
+  <?php endif; ?>
 </head>
 
 <body>
@@ -103,10 +113,10 @@ if (!$isForum && !$isServices) $isForum = true;
         <div class="vv-top-left">
           <ul class="nav nav-pills vv-tabs">
             <li role="presentation" class="<?php echo ($isForum ? 'active' : ''); ?>">
-              <a href="https://lab.lacallecr.com/VV/apps/Forum/index.php?c=1">FORO</a>
+              <a href="<?= BASE_URL ?>/apps/Forum/index.php?c=1">FORO</a>
             </li>
             <li role="presentation" class="<?php echo ($isServices ? 'active' : ''); ?>">
-              <a href="https://lab.lacallecr.com/VV/apps/Services/index.php?c=1">PROVEEDORES</a>
+              <a href="<?= BASE_URL ?>/apps/Services/index.php?c=1">PROVEEDORES</a>
             </li>
           </ul>
         </div>
@@ -115,7 +125,7 @@ if (!$isForum && !$isServices) $isForum = true;
           <div class="avatar vv-avatar">
             <div class="circle"><?php echo htmlspecialchars((string)$filial); ?></div>
           </div>
-          <button type="button" class="btn btn-default vv-logout" onclick="logout();">Salir</button>
+          <a href="<?= BASE_URL ?>/apps/login/logout.php" class="btn btn-default vv-logout">Salir</a>
         </div>
       </div>
 
@@ -138,15 +148,16 @@ if (!$isForum && !$isServices) $isForum = true;
 
         <ul class="nav nav-pills vv-tabs">
           <li role="presentation" class="<?php echo ($isForum ? 'active' : ''); ?>">
-            <a href="https://lab.lacallecr.com/VV/apps/Forum/index.php">FORO</a>
+            <a href="<?= BASE_URL ?>/apps/Forum/index.php">FORO</a>
           </li>
-        <? /*
           <li role="presentation" class="<?php echo ($isServices ? 'active' : ''); ?>">
-            <a href="https://lab.lacallecr.com/VV/apps/Services/index.php?c=1">PROVEEDORES</a>
+            <a href="<?= BASE_URL ?>/apps/Services/index.php">SERVICIOS</a>
           </li>
-         */ ?> 
           <li role="presentation" class="<?php echo ($isEncuesta ? 'active' : ''); ?>">
-            <a href="https://lab.lacallecr.com/VV/apps/Encuesta/index.php?c=1">ENCUESTAS</a>
+            <a href="<?= BASE_URL ?>/apps/Encuesta/index.php?c=1">ENCUESTAS</a>
+          </li>
+          <li role="presentation" class="<?php echo ($isActividades ? 'active' : ''); ?>">
+            <a href="<?= BASE_URL ?>/apps/Actividades/index.php">ACTIVIDADES</a>
           </li>
         </ul>
       </div>

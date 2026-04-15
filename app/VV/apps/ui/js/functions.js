@@ -1,3 +1,8 @@
+// BASE_URL es inyectado por main_head.php como variable global:
+// <script>var BASE_URL = "<?= BASE_URL ?>";</script>
+// Ejemplo local:      http://localhost:8080/VV
+// Ejemplo producción: https://lab.lacallecr.com/VV
+
 // ============================
 // INACTIVIDAD
 // ============================
@@ -6,11 +11,7 @@ let tiempoRestante = 600000; // 5 minutos
 let contadorIntervalo;
 
 function cerrarSesion() {
-  fetch("logout.php")
-    .then(() => {
-      window.location.href = "https://lab.lacallecr.com/VV/index.php";
-    })
-    .catch(() => {});
+  window.location.href = BASE_URL + "/apps/login/logout.php";
 }
 
 function mostrarAlerta() {
@@ -18,13 +19,15 @@ function mostrarAlerta() {
     cerrarSesion();
     return;
   }
-  Swal.fire({
+  var opts = {
     title: "Inactividad detectada",
     text: "Serás redirigido al inicio por inactividad",
-    icon: "warning",
     confirmButtonText: "Ok",
-  }).then((result) => {
-    if (result.isConfirmed) cerrarSesion();
+  };
+  opts[_swalIconKey] = "warning";
+  Swal.fire(opts).then(function (result) {
+    // v7: result === true  |  v8+: result.isConfirmed === true
+    if (result === true || (result && result.isConfirmed)) cerrarSesion();
   });
 }
 
@@ -51,6 +54,7 @@ document.addEventListener("click", reiniciarTiempo, { passive: true });
 
 // ============================
 // APP CONTEXT (Forum / Services)
+// Detecta el módulo activo y devuelve base + api dinámicos
 // ============================
 function vvDetectApp() {
   const p = (window.location.pathname || "").toLowerCase();
@@ -58,24 +62,24 @@ function vvDetectApp() {
   if (p.includes("/vv/apps/forum/")) {
     return {
       app: "Forum",
-      base: "https://lab.lacallecr.com/VV/apps/Forum/",
-      api: "https://lab.lacallecr.com/VV/apps/Forum/actions/actions.php",
+      base: BASE_URL + "/apps/Forum/",
+      api:  BASE_URL + "/apps/Forum/actions/actions.php",
     };
   }
 
   if (p.includes("/vv/apps/services/")) {
     return {
       app: "Services",
-      base: "https://lab.lacallecr.com/VV/apps/Services/",
-      api: "https://lab.lacallecr.com/VV/apps/Services/actions/actions.php",
+      base: BASE_URL + "/apps/Services/",
+      api:  BASE_URL + "/apps/Services/actions/actions.php",
     };
   }
 
-  // fallback seguro (no rompe)
+  // fallback seguro
   return {
     app: "Unknown",
-    base: "https://lab.lacallecr.com/VV/apps/Forum/",
-    api: "https://lab.lacallecr.com/VV/apps/Forum/actions/actions.php",
+    base: BASE_URL + "/apps/Forum/",
+    api:  BASE_URL + "/apps/Forum/actions/actions.php",
   };
 }
 
@@ -100,26 +104,21 @@ function parseMaybeJSON(resp) {
   }
 }
 
+// SweetAlert2 v7 usa "type", v8+ usa "icon". Detectamos la versión.
+var _swalIconKey = (window.Swal && Swal.version && parseInt(Swal.version) >= 8) ? "icon" : "type";
+
 function swalError(msg) {
-  if (!window.Swal) {
-    alert(msg || "Hubo un error");
-    return;
-  }
-  Swal.fire({
-    icon: "error",
-    title: "Oops...",
-    text: msg || "Hubo un error",
-  });
+  if (!window.Swal) { alert(msg || "Hubo un error"); return; }
+  var opts = { title: "Oops...", text: msg || "Hubo un error" };
+  opts[_swalIconKey] = "error";
+  Swal.fire(opts);
 }
 
 function swalOk(title, text) {
   if (!window.Swal) return;
-  Swal.fire({
-    title: title || "¡Listo!",
-    text: text || "",
-    icon: "success",
-    confirmButtonText: "Aceptar",
-  });
+  var opts = { title: title || "¡Listo!", text: text || "", confirmButtonText: "Aceptar" };
+  opts[_swalIconKey] = "success";
+  Swal.fire(opts);
 }
 
 // ============================
@@ -160,25 +159,23 @@ if (typeof window.jQuery !== "undefined") {
       });
 
       function appendNewTopicFields(fd) {
-          fd.append("t", safeTrim($("#title").val()));
-          fd.append("c", safeTrim($("#category").val()));
-          fd.append("desc", safeTrim($("#desc").val()));
+        fd.append("t", safeTrim($("#title").val()));
+        fd.append("c", safeTrim($("#category").val()));
+        fd.append("desc", safeTrim($("#desc").val()));
 
-          // ✅ Tipo: soporta radio (name="tipo") y fallback a selects/inputs viejos
-          let tipo = "";
-          const tipoRadio = $('input[name="tipo"]:checked').val();
-          if (tipoRadio !== undefined && tipoRadio !== null) tipo = String(tipoRadio);
+        let tipo = "";
+        const tipoRadio = $('input[name="tipo"]:checked').val();
+        if (tipoRadio !== undefined && tipoRadio !== null) tipo = String(tipoRadio);
+        if (!tipo) tipo = safeTrim($("#tipo").val() || "");
+        if (!tipo) tipo = safeTrim($("#type").val() || "");
+        if (tipo) fd.append("tipo", tipo);
 
-          if (!tipo) tipo = safeTrim($("#tipo").val() || "");
-          if (!tipo) tipo = safeTrim($("#type").val() || "");
-
-          if (tipo) fd.append("tipo", tipo);
+        const tel = safeTrim($("#telefono").val() || "");
+        if (tel) fd.append("telefono", tel);
       }
 
       dzTopic.on("sending", function (file, xhr, formData) {
         appendNewTopicFields(formData);
-     
-               // ✅ DEBUG: ver qué va al server (solo consola)
         try {
           const dbg = {};
           for (const pair of formData.entries()) {
@@ -190,12 +187,6 @@ if (typeof window.jQuery !== "undefined") {
         } catch (e) {
           console.warn("No se pudo leer FormData", e);
         }
-
-
-
-
-
-
       });
 
       dzTopic.on("sendingmultiple", function (files, xhr, formData) {
@@ -226,15 +217,8 @@ if (typeof window.jQuery !== "undefined") {
 
       dzTopic.on("queuecomplete", function () {
         if (!dzTopicLastOk) return;
-
-        // deshabilitar botón submit si existe
         $("#btn_post").prop("disabled", true);
-
-        swalOk(
-          "¡PERFECTO!",
-          "Tu Tema fue creado. Una vez aprobado por la comisión va a ser publicado."
-        );
-
+        swalOk("¡PERFECTO!", "Tu Tema fue creado. Una vez aprobado por la comisión va a ser publicado.");
         setTimeout(function () {
           window.location.href = VV.base + "index.php";
         }, 1500);
@@ -247,12 +231,11 @@ if (typeof window.jQuery !== "undefined") {
         e.preventDefault();
 
         const title = safeTrim($("#title").val());
-        const cat = safeTrim($("#category").val());
-        const desc = safeTrim($("#desc").val());
+        const cat   = safeTrim($("#category").val());
+        const desc  = safeTrim($("#desc").val());
 
-        // opcional (Services)
         const hasTipo = $("#tipo").length > 0 || $("#type").length > 0;
-        const tipo = safeTrim($("#tipo").val() || $("#type").val());
+        const tipo    = safeTrim($("#tipo").val() || $("#type").val());
 
         if (!(title.length > 1 && cat && desc.length > 1)) {
           swalError("Todos los campos son obligatorios");
@@ -269,25 +252,23 @@ if (typeof window.jQuery !== "undefined") {
           return;
         }
 
-        // sin archivos
         try {
           const fd = new FormData();
           fd.append("t", title);
           fd.append("c", cat);
           fd.append("desc", desc);
           if (hasTipo && tipo) fd.append("tipo", tipo);
+          const tel = safeTrim($("#telefono").val() || "");
+          if (tel) fd.append("telefono", tel);
 
-          const r = await fetch(VV.api + "?ac=topic", { method: "POST", body: fd });
+          const r    = await fetch(VV.api + "?ac=topic", { method: "POST", body: fd });
           const text = await r.text();
           const data = parseMaybeJSON(text);
           if (!data) throw new Error("Respuesta NO es JSON: " + text);
 
           if (String(data.control) === "1") {
             $("#btn_post").prop("disabled", true);
-            swalOk(
-              "¡PERFECTO!",
-              "Tu Tema fue creado. Una vez aprobado por la comisión va a ser publicado."
-            );
+            swalOk("¡PERFECTO!", "Tu Tema fue creado. Una vez aprobado por la comisión va a ser publicado.");
             setTimeout(function () {
               window.location.href = VV.base + "index.php";
             }, 1500);
@@ -299,9 +280,8 @@ if (typeof window.jQuery !== "undefined") {
         }
       });
 
-   
     // ============================
-    // REPLY (respuesta en topic)  frm_reply o frm_topic + dzReplyAdjuntos
+    // REPLY (frm_reply o frm_topic + dzReplyAdjuntos)
     // ============================
     let dzReply = null;
     let dzReplyLastOk = null;
@@ -335,13 +315,8 @@ if (typeof window.jQuery !== "undefined") {
         fd.append("reply", safeTrim($("#reply").val()));
       }
 
-      dzReply.on("sending", function (file, xhr, formData) {
-        appendReplyFields(formData);
-      });
-
-      dzReply.on("sendingmultiple", function (files, xhr, formData) {
-        appendReplyFields(formData);
-      });
+      dzReply.on("sending",         function (f, x, fd) { appendReplyFields(fd); });
+      dzReply.on("sendingmultiple", function (f, x, fd) { appendReplyFields(fd); });
 
       dzReply.on("success", function (file, resp) {
         const data = parseMaybeJSON(resp);
@@ -367,25 +342,18 @@ if (typeof window.jQuery !== "undefined") {
 
       dzReply.on("queuecomplete", function () {
         if (!dzReplyLastOk) return;
-
         swalOk("¡Genial!", "Su Respuesta ha sido Guardada");
-
-        setTimeout(function () {
-          // mejor UX: recargar el mismo topic
-          window.location.reload();
-        }, 1200);
+        setTimeout(function () { window.location.reload(); }, 1200);
       });
     }
 
     $("#frm_reply, #frm_topic")
       .off("submit")
       .on("submit", async function (e) {
-        // si no existe textarea reply, no tocamos
         if (!document.getElementById("reply")) return;
-
         e.preventDefault();
 
-        const tema = safeTrim($("#topic").val());
+        const tema  = safeTrim($("#topic").val());
         const reply = safeTrim($("#reply").val());
 
         if (!tema || reply.length < 1) {
@@ -404,16 +372,14 @@ if (typeof window.jQuery !== "undefined") {
           fd.append("t", tema);
           fd.append("reply", reply);
 
-          const r = await fetch(VV.api + "?ac=reply", { method: "POST", body: fd });
+          const r    = await fetch(VV.api + "?ac=reply", { method: "POST", body: fd });
           const text = await r.text();
           const data = parseMaybeJSON(text);
           if (!data) throw new Error("Respuesta NO es JSON: " + text);
 
           if (String(data.control) === "1") {
             swalOk("¡Genial!", "Su Respuesta ha sido Guardada");
-            setTimeout(function () {
-              window.location.reload();
-            }, 1200);
+            setTimeout(function () { window.location.reload(); }, 1200);
           } else {
             swalError(data.error || "Hubo un error");
           }
@@ -422,80 +388,59 @@ if (typeof window.jQuery !== "undefined") {
         }
       });
 
+    // ============================
+    // PENDING TOPIC (frm_pending)
+    // ============================
+    $("#frm_pending")
+      .off("submit")
+      .on("submit", async function (e) {
+        e.preventDefault();
 
+        const topicEl = document.getElementById("topic");
+        const revEl   = document.getElementById("revision");
+        const replyEl = document.getElementById("reply");
 
-$("#frm_pending")
-  .off("submit")
-  .on("submit", async function (e) {
-    e.preventDefault();
+        if (!topicEl || !revEl || !replyEl) {
+          swalError("Faltan campos requeridos en el formulario.");
+          return;
+        }
 
-    // requeridos
-    const topicEl = document.getElementById("topic");
-    const revEl   = document.getElementById("revision");
-    const replyEl = document.getElementById("reply");
+        const tema   = safeTrim(topicEl.value);
+        const estado = safeTrim(revEl.value);
+        const reply  = safeTrim(replyEl.value);
 
-    if (!topicEl || !revEl || !replyEl) {
-      swalError("Faltan campos requeridos en el formulario.");
-      return;
-    }
+        if (!tema)           { swalError("No se encontró el ID del tema."); return; }
+        if (!estado)         { swalError("Debe seleccionar una revisión."); return; }
+        if (reply.length < 1){ swalError("Debe escribir un comentario.");   return; }
 
-    const tema   = safeTrim(topicEl.value);
-    const estado = safeTrim(revEl.value);
-    const reply  = safeTrim(replyEl.value);
+        try {
+          const fd = new FormData();
+          fd.append("t", tema);
+          fd.append("r", estado);
+          fd.append("reply", reply);
 
-    // Validaciones
-    if (!tema) {
-      swalError("No se encontró el ID del tema.");
-      return;
-    }
-    if (!estado) {
-      swalError("Debe seleccionar una revisión.");
-      return;
-    }
-    if (reply.length < 1) {
-      swalError("Debe escribir un comentario.");
-      return;
-    }
+          const resp = await fetch(VV.api + "?ac=topicPending", { method: "POST", body: fd });
+          const text = await resp.text();
+          const data = parseMaybeJSON(text);
 
-    try {
-      const fd = new FormData();
-      fd.append("t", tema);        // topic id
-      fd.append("r", estado);      // estado/revision (1 aprobado / 3 rechazado)
-      fd.append("reply", reply);   // comentario
+          if (!data) throw new Error("Respuesta NO es JSON: " + text);
 
-      const resp = await fetch(`${VV.api}?ac=topicPending`, {
-        method: "POST",
-        body: fd,
+          if (String(data.control) === "1") {
+            swalOk("Tema revisado", "La revisión fue guardada correctamente.");
+            setTimeout(() => {
+              window.location.href = VV.base + "pending.php";
+            }, 1200);
+          } else {
+            swalError(data.error || "Hubo un error al guardar la revisión.");
+          }
+        } catch (err) {
+          swalError("A system error was detected");
+        }
       });
 
-      const text = await resp.text();
-      const data = parseMaybeJSON(text);
-
-      if (!data) throw new Error("Respuesta NO es JSON: " + text);
-
-      // control === "1" => OK
-      if (String(data.control) === "1") {
-        swalOk("Tema revisado", "La revisión fue guardada correctamente.");
-        setTimeout(() => {
-          window.location.href = "https://lab.lacallecr.com/VV/apps/Forum/pending.php";
-        }, 1200);
-      } else {
-        swalError(data.error || "Hubo un error al guardar la revisión.");
-      }
-    } catch (err) {
-      swalError("A system error was detected");
-      // Si quieres depurar:
-      // console.error(err);
-    }
-  });
-
-
-
-
-
-    // =======================
+    // ============================
     // SELECT2: Categoría editable (solo Services)
-    // =======================
+    // ============================
     function initEditableCategorySelect2(selectId, createUrl) {
       if (!$(selectId).length) return;
       if (!$.fn.select2) return;
@@ -515,21 +460,16 @@ $("#frm_pending")
         const fd = new FormData();
         fd.append("nombre", nombre);
 
-        const r = await fetch(createUrl, { method: "POST", body: fd });
+        const r    = await fetch(createUrl, { method: "POST", body: fd });
         const text = await r.text();
 
         let data;
-        try {
-          data = JSON.parse(text);
-        } catch (e) {
-          throw new Error("Respuesta NO es JSON: " + text);
-        }
+        try { data = JSON.parse(text); }
+        catch (e) { throw new Error("Respuesta NO es JSON: " + text); }
 
-        // esperado: {control:1,id:123} o parecido
         const id = data.id || data.ID || data.Id;
         if ((String(data.control) === "1" || data.control === 1) && id) return id;
         if (id) return id;
-
         throw new Error(data.error || data.message || "No se pudo crear la categoría");
       }
 
@@ -541,13 +481,7 @@ $("#frm_pending")
           const term = (params.term || "").trim();
           if (!term) return null;
           if (existsByText(term)) return null;
-
-          return {
-            id: "__new__:" + term,
-            text: 'Crear: "' + term + '"',
-            newTag: true,
-            term: term,
-          };
+          return { id: "__new__:" + term, text: 'Crear: "' + term + '"', newTag: true, term: term };
         },
         templateSelection: function (data) {
           return data && data.newTag ? data.term : data.text;
@@ -563,15 +497,11 @@ $("#frm_pending")
 
         try {
           const newId = await createCategory(nombre);
-
-          // quitar option temporal y agregar real con ID real como value
           $sel.find('option[value="' + data.id.replace(/"/g, '\\"') + '"]').remove();
           const opt = new Option(nombre, newId, true, true);
           $sel.append(opt).trigger("change");
-
           swalOk("Listo", "Categoría creada");
         } catch (err) {
-          // limpiar selección si falló
           $sel.find('option[value="' + data.id.replace(/"/g, '\\"') + '"]').remove();
           $sel.val(null).trigger("change");
           swalError(err.message || "No se pudo crear la categoría");
@@ -579,29 +509,26 @@ $("#frm_pending")
       });
     }
 
-    if (VV.app === "Services") {  //alexis
+    if (VV.app === "Services") {
       initEditableCategorySelect2(
         "#category",
-        "https://lab.lacallecr.com/VV/apps/Services/actions/actions.php?ac=newCat"
+        BASE_URL + "/apps/Services/actions/actions.php?ac=newCat"
       );
     }
   });
 }
 
 // ============================
-// FUNCIONES EXISTENTES / GLOBALES
+// FUNCIONES GLOBALES
 // ============================
 function logout() {
-  fetch("https://lab.lacallecr.com/VV/apps/login/proccess/actions.php?ac=logout")
-    .then((r) => r.json())
-    .then(function (data) {
-      if (data.login == 1) window.location.href = "https://lab.lacallecr.com/VV/";
-    })
-    .catch(() => alert("A system error was detected"));
+  // Redirección directa a logout.php — destruye sesión en servidor y vuelve al login.
+  // Evita problemas de parsing JSON por output extra del servidor.
+  window.location.href = BASE_URL + "/apps/login/logout.php";
 }
 
 function closeTopicControl() {
-  var tema = jQuery("#topic").val();
+  var tema  = jQuery("#topic").val();
   var reply = jQuery("#reply").val();
 
   if (reply && reply.length > 1) {
@@ -636,9 +563,8 @@ function closeTopic() {
   jQuery(".active").hide();
   jQuery(".closed").show();
 
-  var tema = jQuery("#topic").val();
+  var tema  = jQuery("#topic").val();
   var reply = jQuery("#reply").val();
-
   const VV2 = vvDetectApp();
 
   if (reply && reply.length > 1) {
@@ -677,33 +603,30 @@ function SearchTema() {
 }
 
 /* ============================================================
-   LIKE / UNLIKE (LEGACY) – usado en topic.php (pulgares)
+   LIKE / UNLIKE — usado en topic.php (pulgares)
    ============================================================ */
-function likes(res){
+function likes(res) {
   try {
     if (typeof window.jQuery === "undefined") return;
     var tema = $("#topic").val();
     var user = $("#user").val();
+    var vv   = (typeof vvDetectApp === "function") ? vvDetectApp() : null;
+    var api  = (vv && vv.api) ? vv.api : BASE_URL + "/apps/Forum/actions/actions.php";
 
-    // Detecta el app (Forum/Services) y usa su actions.php
-    var vv = (typeof vvDetectApp === "function") ? vvDetectApp() : null;
-    var api = (vv && vv.api) ? vv.api : "https://lab.lacallecr.com/VV/apps/Forum/proccess/actions.php";
-
-    // Mantener el endpoint legacy del Foro
     $.get(api + "?ac=like&tema=" + encodeURIComponent(tema) +
       "&user=" + encodeURIComponent(user) +
-      "&like=" + (res ? 1 : 0), function(){});
+      "&like=" + (res ? 1 : 0), function () {});
 
-    if(res){
-      var contenido = $("#slu_"+tema).text();
-      $("#slu_"+tema).text(parseInt(contenido || "0", 10) + 1);
-      $('#lu_'+tema).addClass('disabled-link');
-      $('#ld_'+tema).addClass('disabled-link');
+    if (res) {
+      var contenido = $("#slu_" + tema).text();
+      $("#slu_" + tema).text(parseInt(contenido || "0", 10) + 1);
+      $("#lu_" + tema).addClass("disabled-link");
+      $("#ld_" + tema).addClass("disabled-link");
     } else {
-      var contenido2 = $("#sld_"+tema).text();
-      $("#sld_"+tema).text(parseInt(contenido2 || "0", 10) + 1);
-      $('#ld_'+tema).addClass('disabled-link');
-      $('#lu_'+tema).addClass('disabled-link');
+      var contenido2 = $("#sld_" + tema).text();
+      $("#sld_" + tema).text(parseInt(contenido2 || "0", 10) + 1);
+      $("#ld_" + tema).addClass("disabled-link");
+      $("#lu_" + tema).addClass("disabled-link");
     }
   } catch (e) {
     console.error("likes() error:", e);
@@ -713,21 +636,17 @@ function likes(res){
 function Rlikes(likeValue, rid) {
   try {
     if (typeof window.jQuery === "undefined") return;
-
     var user = $("#user").val();
     if (!user || !rid) return;
 
-    var api = "https://lab.lacallecr.com/VV/apps/Forum/actions/actions.php";
-
-    // evitar doble click SOLO en esta respuesta
-    var $up = $("#rlu_" + rid);
+    var vv2  = (typeof vvDetectApp === "function") ? vvDetectApp() : null;
+    var api  = (vv2 && vv2.api) ? vv2.api : BASE_URL + "/apps/Forum/actions/actions.php";
+    var $up   = $("#rlu_" + rid);
     var $down = $("#rld_" + rid);
     if ($up.hasClass("disabled-link") || $down.hasClass("disabled-link")) return;
 
-    // ✅ backend legacy: res = id_respuesta, like = 1/0, user = id_user
     $.get(api, { ac: "Rlike", res: rid, user: user, like: likeValue });
 
-    // actualizar contadores en UI
     if (parseInt(likeValue, 10) === 1) {
       var contenido = $("#rslu_" + rid).text();
       $("#rslu_" + rid).text(parseInt(contenido || "0", 10) + 1);
@@ -736,11 +655,9 @@ function Rlikes(likeValue, rid) {
       $("#rsld_" + rid).text(parseInt(contenido2 || "0", 10) + 1);
     }
 
-    // bloquear SOLO este reply
     $up.addClass("disabled-link");
     $down.addClass("disabled-link");
 
-    // (Opcional) si querés refrescar lista por reply (si existe un UL único)
     var $list = $("#dynamic-res_" + rid);
     if ($list.length) {
       $list.load(api + "?ac=Rlikes&id=" + encodeURIComponent(rid) + "&_=" + Date.now());
@@ -750,13 +667,10 @@ function Rlikes(likeValue, rid) {
   }
 }
 
-
-
 function openReglasPopup() {
-    document.getElementById('reglasModal').style.display = 'flex';
+  document.getElementById("reglasModal").style.display = "flex";
 }
 
 function closeReglasPopup() {
-    document.getElementById('reglasModal').style.display = 'none';
+  document.getElementById("reglasModal").style.display = "none";
 }
-

@@ -123,7 +123,15 @@
                                         </div> 
                                     </div>
                                     <div class="posttext pull-left">
-                                         <h2><a href="topic.php?t=<? echo $tema->vars['id'] ?>"><? echo $tema->vars['titulo'] ?></a></h2>
+                                         <h2>
+                                           <a href="topic.php?t=<? echo $tema->vars['id'] ?>"><? echo $tema->vars['titulo'] ?></a>
+                                           <a href="topic.php?t=<? echo $tema->vars['id'] ?>"
+                                              title="Ver más"
+                                              style="margin-left:8px; color:#aaa; font-size:16px; vertical-align:middle; text-decoration:none;"
+                                              onmouseover="this.style.color='#428bca'" onmouseout="this.style.color='#aaa'">
+                                             <i class="fa fa-eye"></i>
+                                           </a>
+                                         </h2>
                                         <p><? echo $tema->vars['detalle'] ?></p>
                                     </div>
                                     <div class="clearfix"></div>

@@ -236,7 +236,77 @@ function get_adjuntos_tema($tema,$type){
 	db_connect("master");
 	$sql = "SELECT * FROM adjuntos WHERE entidad_id = '".$tema."' AND tipo_entidad = '".$type."'";
 	//echo $sql;
-	return get($sql,'_Adjuntos'); 
+	return get($sql,'_Adjuntos');
+}
+
+
+function get_active_servicios($search = "", $categoria = "", $tipo = "") {
+	db_connect("master");
+	$sql_search    = "";
+	$sql_categoria = "";
+	$sql_tipo      = "";
+	if ($categoria != "") { $sql_categoria = " AND id_categoria = " . (int)$categoria; }
+	if ($search    != "") { $sql_search    = " AND (titulo LIKE ('%" . $search . "%') OR detalle LIKE ('%" . $search . "%'))"; }
+	if ($tipo      != "") { $sql_tipo      = " AND tipo = '" . $tipo . "'"; }
+	$sql = "SELECT * FROM servicios WHERE estado = 1 $sql_search $sql_categoria $sql_tipo ORDER BY fecha DESC";
+	return get($sql, '_Servicios');
+}
+
+function get_pending_servicios() {
+	db_connect("master");
+	$sql = "SELECT * FROM servicios WHERE estado = 0";
+	return get($sql, '_Servicios');
+}
+
+function get_adjuntos_servicio($id, $type) {
+	db_connect("master");
+	$sql = "SELECT * FROM adjuntos_servicios WHERE entidad_id = '" . $id . "' AND tipo_entidad = '" . $type . "'";
+	return get($sql, '_Adjuntos_Servicios');
+}
+
+function get_adjunto_servicio_by_id($adj_id) {
+	db_connect("master");
+	$sql = "SELECT * FROM adjuntos_servicios WHERE id = " . (int)$adj_id;
+	return get($sql, '_Adjuntos_Servicios', true);
+}
+
+
+function get_total_servicio_likes($id) {
+	db_connect("master");
+	$sql = "SELECT count(*) as 'total' FROM servicios_likes WHERE id_tema = $id AND likes = 1";
+	return get_str($sql, true);
+}
+
+function get_total_servicio_unlikes($id) {
+	db_connect("master");
+	$sql = "SELECT count(*) as total FROM servicios_likes WHERE id_tema = $id AND likes = 0";
+	return get_str($sql, true);
+}
+
+function get_users_list_servicio_likes($id, $likes = '-1') {
+	db_connect("master");
+	$sql_likes = ($likes != "-1") ? " AND likes = $likes" : "";
+	$sql = "SELECT GROUP_CONCAT(id_user ORDER BY id_user SEPARATOR ',') AS 'usuarios' FROM servicios_likes WHERE id_tema = $id $sql_likes";
+	return get_str($sql, true);
+}
+
+function get_total_respuesta_servicio_likes($id) {
+	db_connect("master");
+	$sql = "SELECT count(*) as 'total' FROM respuestas_servicios_likes WHERE id_respuesta = $id AND likes = 1";
+	return get_str($sql, true);
+}
+
+function get_total_respuesta_servicio_unlikes($id) {
+	db_connect("master");
+	$sql = "SELECT count(*) as total FROM respuestas_servicios_likes WHERE id_respuesta = $id AND likes = 0";
+	return get_str($sql, true);
+}
+
+function get_users_list_respuesta_servicio_likes($id, $likes = '-1') {
+	db_connect("master");
+	$sql_likes = ($likes != "-1") ? " AND likes = $likes" : "";
+	$sql = "SELECT GROUP_CONCAT(id_user ORDER BY id_user SEPARATOR ',') AS 'usuarios' FROM respuestas_servicios_likes WHERE id_respuesta = $id $sql_likes";
+	return get_str($sql, true);
 }
 
 

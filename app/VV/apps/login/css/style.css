@@ -12,7 +12,9 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: url('https://lab.lacallecr.com/VV/utilities/tema/images/img.jpg') no-repeat;
+  background-color: #1a3a2e; /* fallback oscuro si la imagen no carga */
+  background-image: url('../../../utilities/tema/images/img.jpg'); /* relativo a apps/login/css/ → VV/ */
+  background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
 }

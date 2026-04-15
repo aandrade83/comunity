@@ -1,0 +1,19 @@
+# OS
+.DS_Store
+
+# Docker
+*.log
+docker-data/
+tmp/
+
+# Env
+.env
+
+# Database dumps
+*.sql
+
+# Node (por si luego agregas frontend)
+node_modules/
+
+# PHP vendor (si usas composer)
+vendor/

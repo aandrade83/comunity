@@ -9,6 +9,8 @@ ob_start();
  */
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+ini_set('error_log', '/tmp/vv_actions_error.log');
 
 define('DEBUG_UPLOADS', false); // 👈 ponelo true solo para depurar
 
@@ -305,6 +307,7 @@ case "reply":
   $r_topic->vars["id_user"] = $_SESSION['user'];
   $r_topic->vars["detalle"] = $reply;
   $r_topic->vars["fecha"]   = date("Y-m-d H:i:s");
+  $r_topic->vars["estado"]  = 1;
   $r_topic->insert();
 
   $reply_id = (int)($r_topic->vars["id"] ?? 0);

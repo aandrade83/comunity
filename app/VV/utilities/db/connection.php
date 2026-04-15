@@ -10,7 +10,8 @@ class conn_db {
 
     public function __construct() {
         // Example: $this->databases["id name"] = new database(host, user, pass, name);
-        $this->databases["master"] = new database("db", "user", "password", "valleverde_db");
+        // Credentials come from config.php (DB_HOST, DB_USER, DB_PASSWORD, DB_NAME).
+        $this->databases["master"] = new database(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
        
     }
 

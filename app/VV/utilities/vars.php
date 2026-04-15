@@ -1,12 +1,7 @@
-<?PHP
-date_default_timezone_set("America/Costa_Rica");
-
-error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED ); 
-ini_set('display_errors', '1');
-
-
-
-
+<?php
+// vars.php — Application-level runtime settings.
+// NOTE: timezone and error_reporting are now set in config.php.
+// Add any additional runtime ini_set() calls here if needed.
 
 
 

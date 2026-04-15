@@ -49,28 +49,38 @@
     <? } ?>
     
 </div>
-<?
-$encuestas = get_encuestas(1);
+<?php
+$_side_surveys = [];
+try {
+    global $conn_db;
+    db_connect('master');
+    $_side_stmt = $conn_db->mysqli_connector->prepare('SELECT id, title FROM surveys WHERE status = 1 ORDER BY id DESC LIMIT 5');
+    if ($_side_stmt) {
+        $_side_stmt->execute();
+        $_side_res = $_side_stmt->get_result();
+        while ($_side_row = $_side_res->fetch_assoc()) $_side_surveys[] = $_side_row;
+        $_side_stmt->close();
+    }
+} catch (\Throwable $_side_e) { /* tabla aún no existe */ }
 ?>
-
 
     <!-- -->
     <div class="sidebarblock">
-       <div class="side-topic-enc encuesta"> 
+       <div class="side-topic-enc encuesta">
         <h3>Encuesta</h3>
         </div>
         <div class="divline"></div>
-         <div class="divline"></div>
-          <? if(empty($encuestas)) { ?>
-          <div class="blocktxt">
-           NO HAY ENCUESTA ABIERTA
-         </div>
-          <? } else { ?>
+        <?php if (empty($_side_surveys)): ?>
+          <div class="blocktxt">NO HAY ENCUESTA DISPONIBLE</div>
+        <?php else: ?>
+          <?php foreach ($_side_surveys as $_side_sv): ?>
             <div class="blocktxt">
-             <a href="https://lab.lacallecr.com/VV/apps/Encuesta/index.php" target="_self" >Ver Encuestas</a>
-         </div>
-
-          <? } ?>  
+              <a href="<?= BASE_URL ?>/apps/Encuesta/survey_answer.php?id=<?= (int)$_side_sv['id'] ?>">
+                <?= htmlspecialchars($_side_sv['title'], ENT_QUOTES, 'UTF-8') ?>
+              </a>
+            </div>
+          <?php endforeach; ?>
+        <?php endif; ?>
         <? /*
         <div class="blocktxt">
             <p>Titulo de la Encuesta</p>

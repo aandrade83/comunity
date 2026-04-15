@@ -315,7 +315,26 @@ class _RLikes{
           db_connect("master");
         $this->vars["id"] = insert($this, "respuestas_likes");
     }
-    
+}
+
+
+class _SLikes{
+    var $vars = array();
+    function initial(){}
+    function insert(){
+          db_connect("master");
+        $this->vars["id"] = insert($this, "servicios_likes");
+    }
+}
+
+
+class _SRLikes{
+    var $vars = array();
+    function initial(){}
+    function insert(){
+          db_connect("master");
+        $this->vars["id"] = insert($this, "respuestas_servicios_likes");
+    }
 }
 
 

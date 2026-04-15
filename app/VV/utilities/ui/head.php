@@ -1,8 +1,8 @@
 <head>
     <?php
-      
-        $rutahead="https://lab.lacallecr.com/VV/utilities/tema";
-        $v=1;date("Ymdhis")
+        // ASSETS_URL and BASE_URL are defined in config.php (auto-detects environment).
+        $rutahead = ASSETS_URL;
+        $v = 1; date("Ymdhis");
     ?>
     <meta charset="utf-8">
     <title>VALLE VERDE</title>
@@ -11,7 +11,7 @@
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <!-- App favicon -->
-    <link rel="shortcut icon" href="https://lab.lacallecr.com/VV/assets/images/favicon.ico?v=<?php echo $v;?>">
+    <link rel="shortcut icon" href="<?php echo BASE_URL; ?>/assets/images/favicon.ico?v=<?php echo $v;?>">
 
     <!-- Plugins css -->
     <link href="<?php echo $rutahead;?>/libs/flatpickr/flatpickr.min.css?v=<?php echo $v;?>" rel="stylesheet" type="text/css" />
@@ -57,8 +57,8 @@
     <link rel="stylesheet" href="<?php echo $rutahead;?>/libs/dropzone/dropzone.min.css">
     <script src="<?php echo $rutahead;?>/libs/dropzone/dropzone.min.js"></script>
 
-    <script src="https://lab.lacallecr.com/VV/utilities/includes/js/functions.js"></script>
-    <script src="https://lab.lacallecr.com/VV/utilities/includes/js/jquery.js"></script>
+    <script src="<?php echo BASE_URL; ?>/utilities/includes/js/functions.js"></script>
+    <script src="<?php echo BASE_URL; ?>/utilities/includes/js/jquery.js"></script>
 
 
 </head>
