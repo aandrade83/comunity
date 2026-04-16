@@ -314,6 +314,14 @@ function render_adjuntos_block($adjuntosList, $title = 'Adjuntos'){
                     </div>
                   <? } ?>
 
+                  <?php if ($superadmin): ?>
+                    <div class="pull-left active">
+                      <button id="btn-delete-topic" style="background-color:#7b241c;margin-left:15px;" type="button" class="btn btn-primary">
+                        <i class="fa fa-trash"></i> Eliminar Tema
+                      </button>
+                    </div>
+                  <?php endif; ?>
+
                   <div class="clearfix"></div>
                 </div>
               <? } ?>
@@ -332,5 +340,41 @@ function render_adjuntos_block($adjuntosList, $title = 'Adjuntos'){
 </section>
 
 <script>viewControl()</script>
+
+<?php if ($superadmin): ?>
+<script>
+(function () {
+  var btn = document.getElementById('btn-delete-topic');
+  if (!btn) return;
+  btn.addEventListener('click', function () {
+    var topicId = document.getElementById('topic').value;
+    var opts = {
+      title: '¿Eliminar este tema?',
+      text: 'Se borrarán el tema, todas sus respuestas y archivos adjuntos. Esta acción no se puede deshacer.',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#c0392b'
+    };
+    opts[_swalIconKey] = 'warning';
+    Swal.fire(opts).then(function (result) {
+      if (!result) return;
+      var fd = new FormData();
+      fd.append('id', topicId);
+      fetch('delete_topic.php', { method: 'POST', body: fd })
+        .then(function (r) { return r.json(); })
+        .then(function (resp) {
+          if (resp.ok) {
+            window.location.href = 'index.php';
+          } else {
+            alert(resp.error || 'Error al eliminar');
+          }
+        })
+        .catch(function () { alert('Error de comunicación'); });
+    });
+  });
+})();
+</script>
+<?php endif; ?>
 
 <? include('../ui/partials/footer.php'); ?>

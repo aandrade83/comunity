@@ -12,7 +12,7 @@ function json_exit(array $data, int $code = 200): void {
 }
 
 if (empty($_SESSION['user']))                                   json_exit(['ok' => false, 'error' => 'Sesión expirada'], 401);
-if (!isset($_SESSION['rol']) || (int)$_SESSION['rol'] !== 2)   json_exit(['ok' => false, 'error' => 'Sin permiso'], 403);
+if (!isset($_SESSION['rol']) || (int)$_SESSION['rol'] < 2)   json_exit(['ok' => false, 'error' => 'Sin permiso'], 403);
 if ($_SERVER['REQUEST_METHOD'] !== 'POST')                      json_exit(['ok' => false, 'error' => 'Método inválido'], 405);
 
 $act_id = (int)($_POST['id'] ?? 0);

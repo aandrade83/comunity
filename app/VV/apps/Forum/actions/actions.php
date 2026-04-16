@@ -186,6 +186,12 @@ switch ($action) {
     $data = ['control'=>"1",'topic_id'=>$topic->vars['id']];
     if (!empty($saved)) $data['adjuntos'] = $saved;
 
+    // Notificar a condominos con email_flag = 1
+    try {
+        require_once ROOT_PATH . '/utilities/mail/notificaciones.php';
+        vv_notificar('Tema', $title);
+    } catch (\Throwable $_e) { /* no cortar el flujo */ }
+
     json_exit($data);
     break;
 

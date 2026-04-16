@@ -14,9 +14,13 @@ if (empty($id_user)) {
     exit;
 }
 
-$comision = false;
-if (isset($_SESSION['rol']) && (int)$_SESSION['rol'] === 2) {
+$comision    = false;
+$superadmin  = false;
+if (isset($_SESSION['rol']) && (int)$_SESSION['rol'] >= 2) {
   $comision = true;
+}
+if (isset($_SESSION['rol']) && (int)$_SESSION['rol'] >= 3) {
+  $superadmin = true;
 }
 
 require_once($_SERVER['DOCUMENT_ROOT'] . "/VV/utilities/includes.php");
@@ -31,10 +35,11 @@ $uri = $_SERVER['REQUEST_URI'] ?? '';
 $isForum       = (strpos($uri, '/VV/apps/Forum/') !== false);
 $isServices    = (strpos($uri, '/VV/apps/Services/') !== false);
 $isEncuesta    = (strpos($uri, '/VV/apps/Encuesta/') !== false);
-$isActividades = (strpos($uri, '/VV/apps/Actividades/') !== false);
+$isActividades  = (strpos($uri, '/VV/apps/Actividades/') !== false);
+$isCondominios  = (strpos($uri, '/VV/apps/Condominios/') !== false);
 
 // Fallback: si no calza nada, asumimos Foro
-if (!$isForum && !$isServices && !$isEncuesta && !$isActividades) $isForum = true;
+if (!$isForum && !$isServices && !$isEncuesta && !$isActividades && !$isCondominios) $isForum = true;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -161,6 +166,11 @@ if (!$isForum && !$isServices && !$isEncuesta && !$isActividades) $isForum = tru
           <li role="presentation" class="<?php echo ($isActividades ? 'active' : ''); ?>">
             <a href="<?= BASE_URL ?>/apps/Actividades/index.php">ACTIVIDADES</a>
           </li>
+          <?php if ($superadmin): ?>
+          <li role="presentation" class="<?php echo ($isCondominios ? 'active' : ''); ?>">
+            <a href="<?= BASE_URL ?>/apps/Condominios/index.php">CONDOMINIOS</a>
+          </li>
+          <?php endif; ?>
         </ul>
       </div>
 

@@ -65,7 +65,7 @@ function renderQuestion(array $q, bool $preview): string {
 
 $survey_id = (int)(param('id') ?? 0);
 $filial    = $_SESSION['filial'] ?? '';
-$comision  = isset($_SESSION['rol']) && (int)$_SESSION['rol'] === 2;
+$comision  = isset($_SESSION['rol']) && (int)$_SESSION['rol'] >= 2;
 
 if (!$survey_id) {
     header('Location: index.php');

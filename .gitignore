@@ -20,3 +20,7 @@ vendor/
 # Uploads (NO subir)
 app/VV/apps/Actividades/uploads/
 app/VV/apps/Services/uploads/
+
+# Config sensibles
+app/VV/config.php
+app/VV/utilities/db/connection.php

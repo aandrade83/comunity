@@ -3,7 +3,7 @@ include('../ui/main_head.php');
 require_once ROOT_PATH . '/apps/Encuesta/db.php';
 
 // Commission only
-if (!isset($_SESSION['rol']) || (int)$_SESSION['rol'] !== 2) {
+if (!isset($_SESSION['rol']) || (int)$_SESSION['rol'] < 2) {
     header('Location: index.php');
     exit;
 }

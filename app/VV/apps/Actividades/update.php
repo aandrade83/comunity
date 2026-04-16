@@ -3,7 +3,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/VV/utilities/includes.php';
 require_once ROOT_PATH . '/apps/Actividades/db.php';
 
 if (empty($_SESSION['user'])) { header('Location: ' . BASE_URL . '/apps/Actividades/index.php'); exit; }
-if (!isset($_SESSION['rol']) || (int)$_SESSION['rol'] !== 2) { header('Location: ' . BASE_URL . '/apps/Actividades/index.php'); exit; }
+if (!isset($_SESSION['rol']) || (int)$_SESSION['rol'] < 2) { header('Location: ' . BASE_URL . '/apps/Actividades/index.php'); exit; }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { header('Location: ' . BASE_URL . '/apps/Actividades/index.php'); exit; }
 
 $act_id      = (int)($_POST['id']           ?? 0);

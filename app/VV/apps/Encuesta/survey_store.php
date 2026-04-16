@@ -20,7 +20,7 @@ function json_out(array $data, int $code = 200): void {
 }
 
 // Commission only
-if (!isset($_SESSION['rol']) || (int)$_SESSION['rol'] !== 2) {
+if (!isset($_SESSION['rol']) || (int)$_SESSION['rol'] < 2) {
     json_out(['ok' => false, 'error' => 'Sin permiso'], 403);
 }
 
@@ -74,6 +74,7 @@ if ($survey_id > 0) {
     if (!$survey_id) {
         json_out(['ok' => false, 'error' => 'Error al crear encuesta']);
     }
+    $is_new_survey = true;
 }
 
 // Insert questions + options
@@ -106,6 +107,14 @@ foreach ($questions as $sort => $q) {
             );
         }
     }
+}
+
+// Notificar solo si es encuesta nueva (no edición)
+if (!empty($is_new_survey)) {
+    try {
+        require_once ROOT_PATH . '/utilities/mail/notificaciones.php';
+        vv_notificar('Encuesta', $title);
+    } catch (\Throwable $_e) { /* no cortar el flujo */ }
 }
 
 json_out(['ok' => true, 'survey_id' => $survey_id]);

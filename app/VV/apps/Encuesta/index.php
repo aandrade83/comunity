@@ -3,7 +3,7 @@ include('../ui/main_head.php');
 require_once ROOT_PATH . '/apps/Encuesta/db.php';
 
 $filial   = $_SESSION['filial'] ?? '';
-$comision = isset($_SESSION['rol']) && (int)$_SESSION['rol'] === 2;
+$comision = isset($_SESSION['rol']) && (int)$_SESSION['rol'] >= 2;
 
 // Load surveys: commission sees all, filials see only active
 if ($comision) {
@@ -234,7 +234,7 @@ document.querySelectorAll('.btn-enc-delete').forEach(function(btn) {
         opts[_swalIconKey] = 'warning';
 
         Swal.fire(opts).then(function(result) {
-            if (result !== true && !(result && result.isConfirmed)) return;
+            if (!result) return;
             fetch('actions/actions.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},

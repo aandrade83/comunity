@@ -20,7 +20,7 @@ if (empty($_SESSION['user'])) {
 }
 
 $filial   = $_SESSION['filial'] ?? '';
-$comision = isset($_SESSION['rol']) && (int)$_SESSION['rol'] === 2;
+$comision = isset($_SESSION['rol']) && (int)$_SESSION['rol'] >= 2;
 
 // Detect action from form-encoded POST or JSON body
 $ac = $_POST['ac'] ?? null;
