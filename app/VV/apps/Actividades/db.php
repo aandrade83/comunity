@@ -117,7 +117,7 @@ function act_process_uploads(int $entidad_id, string $entidad = 'actividad'): vo
 // ── Comentarios ──────────────────────────────────────────────────────────────
 
 /** Comentarios de una actividad, con sus adjuntos cargados */
-function act_comentarios(int $actividad_id): array {
+/*function act_comentarios(int $actividad_id): array {
     $rows = act_rows(
         'SELECT * FROM actividad_comentarios WHERE actividad_id = ? ORDER BY created_at ASC',
         'i', $actividad_id
@@ -126,5 +126,31 @@ function act_comentarios(int $actividad_id): array {
         $c['adjuntos'] = act_adjuntos_comment((int)$c['id']);
     }
     unset($c);
+    return $rows;
+}*/
+function act_comentarios(int $actividad_id): array {
+
+    try {
+        $rows = act_rows(
+            'SELECT * FROM actividad_comentarios WHERE actividad_id = ? ORDER BY created_at ASC',
+            'i',
+            $actividad_id
+        );
+    } catch (Throwable $e) {
+        // 🔥 aquí atrapamos el error real (query, tabla, etc)
+        error_log("ERROR act_comentarios: " . $e->getMessage());
+        return [];
+    }
+
+    if (!is_array($rows) || empty($rows)) {
+        return [];
+    }
+
+    foreach ($rows as &$c) {
+        $c['adjuntos'] = act_adjuntos_comment((int)$c['id']);
+    }
+
+    unset($c);
+
     return $rows;
 }

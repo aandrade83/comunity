@@ -8,6 +8,7 @@ tmp/
 
 # Env
 .env
+.envrc
 
 # Database dumps
 *.sql
@@ -18,9 +19,9 @@ node_modules/
 # PHP vendor (si usas composer)
 vendor/
 # Uploads (NO subir)
-app/VV/apps/Actividades/uploads/
-app/VV/apps/Services/uploads/
+#app/VV/apps/Actividades/uploads/
+#app/VV/apps/Services/uploads/
 
 # Config sensibles
 app/VV/config.php
-app/VV/utilities/db/connection.php
+#app/VV/utilities/db/connection.php
