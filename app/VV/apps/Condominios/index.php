@@ -315,6 +315,9 @@ if ($result) {
     var fd = new FormData();
     Object.keys(data).forEach(function (k) { fd.append(k, data[k]); });
 
+    var saveBtn = tr.querySelector('.btn-save-row');
+    if (saveBtn) saveBtn.disabled = true;
+
     fetch('actions.php', { method: 'POST', body: fd })
       .then(function (r) { return r.json(); })
       .then(function (resp) {
@@ -334,10 +337,14 @@ if ($result) {
             ? '<span class="email-ok" title="Activo">✓</span>'
             : '<span class="email-no" title="Inactivo">✗</span>';
         } else {
+          if (saveBtn) saveBtn.disabled = false;
           alert(resp.error || 'Error al guardar');
         }
       })
-      .catch(function () { alert('Error de comunicación'); });
+      .catch(function () {
+        if (saveBtn) saveBtn.disabled = false;
+        alert('Error de comunicación');
+      });
   }
 
   // ── Export PDF (print) ─────────────────────────────────────────────────────

@@ -84,12 +84,18 @@ $error = param('err') ?? '';
 
                             <div style="margin-top:20px; margin-bottom:40px; text-align:right;">
                                 <a href="index.php" class="btn btn-default" style="margin-right:8px;">Cancelar</a>
-                                <button type="submit" class="btn btn-success btn-lg">
+                                <button type="submit" id="btn-create-act" class="btn btn-success btn-lg">
                                     <i class="fa fa-save"></i> Guardar Actividad
                                 </button>
                             </div>
 
                         </form>
+<script>
+document.querySelector('form').addEventListener('submit', function() {
+    var btn = document.getElementById('btn-create-act');
+    if (btn) btn.disabled = true;
+});
+</script>
                     </div>
                 </div>
 

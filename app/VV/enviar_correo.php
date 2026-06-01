@@ -1,6 +1,6 @@
 <?php
 require_once($_SERVER['DOCUMENT_ROOT']."/VV/utilities/includes.php");
-exit;
+//exit;
 /**
  * enviar_correo.php — Script de envío personalizado (blast único / debug).
  *
@@ -21,7 +21,7 @@ require_once ROOT_PATH . '/apps/plantillas/unsuscribe_block.php';
 function get_destinatarios(): array
 {
     db_connect('master');
-    $sql = 'SELECT * FROM condominos c WHERE c.email in (select correo from usuarios u where u.rol = 2)';
+    $sql = 'SELECT * FROM condominos c WHERE c.email in (select correo from usuarios )';
     $rows = get_str($sql, false);
 
     $data = [];
@@ -39,7 +39,8 @@ function get_destinatarios(): array
 }
 
 $data = get_destinatarios();
-
+echo "<pre>";
+print_r($data); exit;
 // ──► ASUNTO ───────────────────────────────────────────────────────────────────
 $asunto = 'Invitación a la Plataforma Comunitaria — Condominio Valle Verde';
 

@@ -200,6 +200,7 @@ document.querySelectorAll('.btn-enc-action').forEach(function(btn) {
     btn.addEventListener('click', function() {
         var id = this.dataset.id;
         var ac = this.dataset.ac;
+        btn.disabled = true;
         fetch('actions/actions.php', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -210,9 +211,11 @@ document.querySelectorAll('.btn-enc-action').forEach(function(btn) {
             if (resp.ok) {
                 location.reload();
             } else {
+                btn.disabled = false;
                 alert(resp.error || 'Error');
             }
-        });
+        })
+        .catch(function() { btn.disabled = false; });
     });
 });
 
@@ -234,7 +237,8 @@ document.querySelectorAll('.btn-enc-delete').forEach(function(btn) {
         opts[_swalIconKey] = 'warning';
 
         Swal.fire(opts).then(function(result) {
-            if (!result) return;
+            if (!(result === true || (result && (result.isConfirmed || result.value)))) return;
+            btn.disabled = true;
             fetch('actions/actions.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -245,9 +249,11 @@ document.querySelectorAll('.btn-enc-delete').forEach(function(btn) {
                 if (resp.ok) {
                     location.reload();
                 } else {
+                    btn.disabled = false;
                     alert(resp.error || 'Error al eliminar');
                 }
-            });
+            })
+            .catch(function() { btn.disabled = false; });
         });
     });
 });

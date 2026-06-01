@@ -4,7 +4,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/VV/utilities/includes.php';
 require_once ROOT_PATH . '/apps/Actividades/db.php';
 
 function json_exit(array $data, int $code = 200): void {
-    if (ob_get_length()) ob_clean();
+    while (ob_get_level() > 0) ob_end_clean();
     http_response_code($code);
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode($data);

@@ -92,6 +92,13 @@ function render_adj_svc($adjuntosList, $title = 'Adjuntos') {
               <i class="fa fa-pencil"></i>
             </a>
           <?php endif; ?>
+          <?php if ($superadmin): ?>
+            <button id="btn-del-service" data-id="<?php echo (int)$servicio->vars['id']; ?>"
+                    class="btn btn-xs btn-danger"
+                    style="position:absolute; top:8px; right:36px; z-index:1;">
+              <i class="fa fa-trash"></i> Eliminar
+            </button>
+          <?php endif; ?>
 
           <div class="topwrap">
             <div class="userinfo pull-left">
@@ -209,6 +216,13 @@ function render_adj_svc($adjuntosList, $title = 'Adjuntos') {
                 </div>
                 <div class="prev pull-left"></div>
                 <div class="posted pull-left"><i class="fa fa-clock-o"></i> <?php echo $rFmt; ?></div>
+                <?php if ($superadmin): ?>
+                  <div class="pull-right" style="margin-top:4px;">
+                    <button class="btn btn-xs btn-danger btn-del-svc-reply" data-id="<?php echo (int)$r->vars['id']; ?>">
+                      <i class="fa fa-trash"></i> Eliminar
+                    </button>
+                  </div>
+                <?php endif; ?>
                 <div class="clearfix"></div>
               </div>
             </div>
@@ -270,5 +284,59 @@ function render_adj_svc($adjuntosList, $title = 'Adjuntos') {
     </div>
   </div>
 </section>
+
+<?php if ($superadmin): ?>
+<script>
+(function() {
+  function swalConfirm(title, text, onConfirm) {
+    var opts = { title: title, text: text, showCancelButton: true,
+                 confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar', confirmButtonColor: '#c0392b' };
+    opts[_swalIconKey] = 'warning';
+    Swal.fire(opts).then(function(result) {
+      if (result === true || (result && (result.isConfirmed || result.value))) onConfirm();
+    });
+  }
+
+  function doDelete(url, id, btn, redirectUrl) {
+    btn.disabled = true;
+    var fd = new FormData();
+    fd.append('id', id);
+    fetch(url, { method: 'POST', body: fd })
+      .then(function(r) { return r.json(); })
+      .then(function(resp) {
+        if (resp.ok) {
+          if (redirectUrl) window.location.href = redirectUrl;
+          else location.reload();
+        } else {
+          btn.disabled = false;
+          alert(resp.error || 'Error al eliminar');
+        }
+      })
+      .catch(function() { btn.disabled = false; alert('Error de comunicación'); });
+  }
+
+  // Eliminar servicio completo
+  var btnSvc = document.getElementById('btn-del-service');
+  if (btnSvc) {
+    btnSvc.addEventListener('click', function() {
+      var id = btnSvc.dataset.id;
+      swalConfirm('¿Eliminar este servicio?',
+        'Se borrarán todas las respuestas y archivos adjuntos. Esta acción no se puede deshacer.',
+        function() { doDelete('delete_service.php', id, btnSvc, 'index.php'); });
+    });
+  }
+
+  // Eliminar respuesta de servicio
+  document.querySelectorAll('.btn-del-svc-reply').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var id = btn.dataset.id;
+      swalConfirm('¿Eliminar esta respuesta?',
+        'Se borrarán los adjuntos. Esta acción no se puede deshacer.',
+        function() { doDelete('delete_service_reply.php', id, btn, null); });
+    });
+  });
+})();
+</script>
+<?php endif; ?>
 
 <?php include('../ui/partials/footer.php'); ?>

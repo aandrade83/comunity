@@ -259,6 +259,7 @@ if (typeof window.jQuery !== "undefined") {
           return;
         }
 
+        $("#btn_post").prop("disabled", true);
         try {
           const fd = new FormData();
           fd.append("t", title);
@@ -274,15 +275,16 @@ if (typeof window.jQuery !== "undefined") {
           if (!data) throw new Error("Respuesta NO es JSON: " + text);
 
           if (String(data.control) === "1") {
-            $("#btn_post").prop("disabled", true);
             swalOk("¡PERFECTO!", "Tu Tema fue creado");
             setTimeout(function () {
               window.location.href = VV.base + "index.php";
             }, 1500);
           } else {
+            $("#btn_post").prop("disabled", false);
             swalError(data.error || "Hubo un error");
           }
         } catch (err) {
+          $("#btn_post").prop("disabled", false);
           swalError("A system error was detected");
         }
       });
@@ -374,6 +376,7 @@ if (typeof window.jQuery !== "undefined") {
           return;
         }
 
+        $("#btn_post").prop("disabled", true);
         try {
           const fd = new FormData();
           fd.append("t", tema);
@@ -388,9 +391,11 @@ if (typeof window.jQuery !== "undefined") {
             swalOk("¡Genial!", "Su Respuesta ha sido Guardada");
             setTimeout(function () { window.location.reload(); }, 1200);
           } else {
+            $("#btn_post").prop("disabled", false);
             swalError(data.error || "Hubo un error");
           }
         } catch (err) {
+          $("#btn_post").prop("disabled", false);
           swalError("A system error was detected");
         }
       });
@@ -420,6 +425,8 @@ if (typeof window.jQuery !== "undefined") {
         if (!estado)         { swalError("Debe seleccionar una revisión."); return; }
         if (reply.length < 1){ swalError("Debe escribir un comentario.");   return; }
 
+        const $btnPending = $("#btn_pending_save");
+        $btnPending.prop("disabled", true);
         try {
           const fd = new FormData();
           fd.append("t", tema);
@@ -438,9 +445,11 @@ if (typeof window.jQuery !== "undefined") {
               window.location.href = VV.base + "pending.php";
             }, 1200);
           } else {
+            $btnPending.prop("disabled", false);
             swalError(data.error || "Hubo un error al guardar la revisión.");
           }
         } catch (err) {
+          $btnPending.prop("disabled", false);
           swalError("A system error was detected");
         }
       });
@@ -575,6 +584,8 @@ function closeTopic() {
   const VV2 = vvDetectApp();
 
   if (reply && reply.length > 1) {
+    var $closeBtn = jQuery("#btn-close-topic, [onclick*='closeTopicControl']").first();
+    if ($closeBtn.length) $closeBtn.prop("disabled", true);
     fetch(VV2.api + "?ac=topicClose&t=" + encodeURIComponent(tema) + "&reply=" + encodeURIComponent(reply))
       .then((r) => r.json())
       .then(function (data) {
@@ -589,10 +600,14 @@ function closeTopic() {
             window.location.href = VV2.base + "index.php";
           }, 1500);
         } else {
+          if ($closeBtn.length) $closeBtn.prop("disabled", false);
           Swal.fire({ icon: "error", title: "Oops...", text: "Hubo un error" });
         }
       })
-      .catch(() => alert("A system error was detected"));
+      .catch(function() {
+        if ($closeBtn.length) $closeBtn.prop("disabled", false);
+        alert("A system error was detected");
+      });
   }
 }
 
@@ -616,6 +631,11 @@ function likes(res) {
   try {
     if (typeof window.jQuery === "undefined") return;
     var tema = $("#topic").val();
+    var $lu = $("#lu_" + tema);
+    var $ld = $("#ld_" + tema);
+    if ($lu.hasClass("disabled-link") || $ld.hasClass("disabled-link")) return;
+    $lu.addClass("disabled-link");
+    $ld.addClass("disabled-link");
     var user = $("#user").val();
     var vv   = (typeof vvDetectApp === "function") ? vvDetectApp() : null;
     var api  = (vv && vv.api) ? vv.api : BASE_URL + "/apps/Forum/actions/actions.php";
@@ -627,13 +647,9 @@ function likes(res) {
     if (res) {
       var contenido = $("#slu_" + tema).text();
       $("#slu_" + tema).text(parseInt(contenido || "0", 10) + 1);
-      $("#lu_" + tema).addClass("disabled-link");
-      $("#ld_" + tema).addClass("disabled-link");
     } else {
       var contenido2 = $("#sld_" + tema).text();
       $("#sld_" + tema).text(parseInt(contenido2 || "0", 10) + 1);
-      $("#ld_" + tema).addClass("disabled-link");
-      $("#lu_" + tema).addClass("disabled-link");
     }
   } catch (e) {
     console.error("likes() error:", e);

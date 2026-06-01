@@ -107,21 +107,24 @@ $actividades = act_rows(
 <script>
 document.querySelectorAll('.btn-act-delete').forEach(function(btn) {
     btn.addEventListener('click', function() {
-        var id = this.dataset.id;
+        var id = btn.dataset.id;
         var opts = { title: '¿Eliminar esta actividad?', text: 'Se eliminarán también los adjuntos y participaciones.', showCancelButton: true, confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar' };
         opts[_swalIconKey] = 'warning';
         Swal.fire(opts).then(function(result) {
-            if (!(result === true || (result && result.isConfirmed))) return;
+            if (!(result === true || (result && (result.isConfirmed || result.value)))) return;
             fetch('delete.php', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                 body: 'id=' + encodeURIComponent(id)
             })
-            .then(function(r){ return r.json(); })
-            .then(function(resp) {
+            .then(function(r) { return r.text(); })
+            .then(function(text) {
+                var resp;
+                try { resp = JSON.parse(text); } catch(e) { alert('Error al eliminar (respuesta inválida): ' + text.substring(0, 200)); return; }
                 if (resp.ok) location.reload();
                 else alert(resp.error || 'Error al eliminar');
-            });
+            })
+            .catch(function(err) { alert('Error de red: ' + err); });
         });
     });
 });

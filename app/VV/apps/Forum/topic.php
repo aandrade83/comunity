@@ -259,6 +259,13 @@ function render_adjuntos_block($adjuntosList, $title = 'Adjuntos'){
 
                 <div class="prev pull-left"></div>
                 <div class="posted pull-left"><i class="fa fa-clock-o"></i><? echo $fecha_formateada ?></div>
+                <?php if ($superadmin): ?>
+                  <div class="pull-right" style="margin-top:4px;">
+                    <button class="btn btn-xs btn-danger btn-del-reply" data-id="<?= (int)$r->vars['id'] ?>">
+                      <i class="fa fa-trash"></i> Eliminar
+                    </button>
+                  </div>
+                <?php endif; ?>
                 <div class="clearfix"></div>
               </div>
             </div>
@@ -358,7 +365,8 @@ function render_adjuntos_block($adjuntosList, $title = 'Adjuntos'){
     };
     opts[_swalIconKey] = 'warning';
     Swal.fire(opts).then(function (result) {
-      if (!result) return;
+      if (!(result === true || (result && (result.isConfirmed || result.value)))) return;
+      btn.disabled = true;
       var fd = new FormData();
       fd.append('id', topicId);
       fetch('delete_topic.php', { method: 'POST', body: fd })
@@ -367,13 +375,38 @@ function render_adjuntos_block($adjuntosList, $title = 'Adjuntos'){
           if (resp.ok) {
             window.location.href = 'index.php';
           } else {
+            btn.disabled = false;
             alert(resp.error || 'Error al eliminar');
           }
         })
-        .catch(function () { alert('Error de comunicación'); });
+        .catch(function () { btn.disabled = false; alert('Error de comunicación'); });
     });
   });
 })();
+</script>
+
+<script>
+document.querySelectorAll('.btn-del-reply').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var id = btn.dataset.id;
+    var opts = { title: '¿Eliminar esta respuesta?', text: 'Se borrarán los adjuntos. Esta acción no se puede deshacer.',
+                 showCancelButton: true, confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar', confirmButtonColor: '#c0392b' };
+    opts[_swalIconKey] = 'warning';
+    Swal.fire(opts).then(function(result) {
+      if (!(result === true || (result && (result.isConfirmed || result.value)))) return;
+      btn.disabled = true;
+      var fd = new FormData();
+      fd.append('id', id);
+      fetch('delete_reply.php', { method: 'POST', body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(resp) {
+          if (resp.ok) location.reload();
+          else { btn.disabled = false; alert(resp.error || 'Error al eliminar'); }
+        })
+        .catch(function() { btn.disabled = false; alert('Error de comunicación'); });
+    });
+  });
+});
 </script>
 <?php endif; ?>
 
