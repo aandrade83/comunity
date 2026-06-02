@@ -198,7 +198,8 @@ if ($result) {
         sortAsc = !sortAsc;
       } else {
         sortCol = col;
-        sortAsc = true;
+        // Last Login defaults to descending (most recent first) on first click
+        sortAsc = (col === DATE_COL) ? false : true;
       }
       headers.forEach(function (h) { h.classList.remove('sort-asc', 'sort-desc'); });
       this.classList.add(sortAsc ? 'sort-asc' : 'sort-desc');
@@ -206,11 +207,26 @@ if ($result) {
     });
   });
 
+  var DATE_COL = 8; // Last Login column index
+
   function sortTable(col, asc) {
     var rows = Array.from(tbody.querySelectorAll('tr'));
     rows.sort(function (a, b) {
       var at = a.cells[col] ? a.cells[col].textContent.trim() : '';
       var bt = b.cells[col] ? b.cells[col].textContent.trim() : '';
+
+      if (col === DATE_COL) {
+        // Empty / dash always goes to the bottom regardless of sort direction
+        var aEmpty = (at === '' || at === '—' || at === '-');
+        var bEmpty = (bt === '' || bt === '—' || bt === '-');
+        if (aEmpty && bEmpty) return 0;
+        if (aEmpty) return 1;
+        if (bEmpty) return -1;
+        var da = new Date(at), db = new Date(bt);
+        var cmp = da - db;
+        return asc ? cmp : -cmp;
+      }
+
       var an = parseFloat(at), bn = parseFloat(bt);
       var cmp = (!isNaN(an) && !isNaN(bn)) ? (an - bn) : at.localeCompare(bt, 'es', { sensitivity: 'base' });
       return asc ? cmp : -cmp;
