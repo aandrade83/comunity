@@ -52,7 +52,7 @@ if (!$isForum && !$isServices && !$isEncuesta && !$isActividades && !$isCondomin
   <link href="../ui/css/bootstrap.min.css" rel="stylesheet">
 
   <!-- Custom -->
-  <link href="../ui/css/custom.css" rel="stylesheet">
+  <link href="../ui/css/custom.css?v=<?= filemtime(ROOT_PATH . '/apps/ui/css/custom.css') ?>" rel="stylesheet">
 
   <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
