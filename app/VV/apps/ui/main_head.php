@@ -145,7 +145,7 @@ if (!$isForum && !$isServices && !$isEncuesta && !$isActividades && !$isCondomin
 
     <div class="vv-topbar">
 
-      <!-- IZQUIERDA: Logo + Tabs (pegados) -->
+      <!-- IZQUIERDA: Logo + botón hamburguesa (móvil) -->
       <div class="vv-left">
         <div class="vv-logo">
           <a href="index.php">
@@ -153,7 +153,12 @@ if (!$isForum && !$isServices && !$isEncuesta && !$isActividades && !$isCondomin
           </a>
         </div>
 
-        <ul class="nav nav-pills vv-tabs">
+        <!-- Hamburguesa — solo visible en móvil -->
+        <button class="vv-hamburger" id="vv-hamburger" type="button" aria-label="Menú" aria-expanded="false" aria-controls="vv-nav-menu">
+          <span></span><span></span><span></span>
+        </button>
+
+        <ul class="nav nav-pills vv-tabs" id="vv-nav-menu">
           <li role="presentation" class="<?php echo ($isForum ? 'active' : ''); ?>">
             <a href="<?= BASE_URL ?>/apps/Forum/index.php">FORO</a>
           </li>
@@ -174,7 +179,7 @@ if (!$isForum && !$isServices && !$isEncuesta && !$isActividades && !$isCondomin
         </ul>
       </div>
 
-      <!-- DERECHA: Usuario -->
+      <!-- DERECHA: Usuario + Salir -->
       <div class="vv-top-right vv-userbox">
         <div class="avatar vv-avatar">
           <div class="circle"><?php echo htmlspecialchars((string)$filial); ?></div>
@@ -187,6 +192,27 @@ if (!$isForum && !$isServices && !$isEncuesta && !$isActividades && !$isCondomin
   </div>
 
   <!-- POPUP REGLAS -->
+<script>
+(function() {
+  var btn = document.getElementById('vv-hamburger');
+  var menu = document.getElementById('vv-nav-menu');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', function() {
+    var open = menu.classList.toggle('vv-nav-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.classList.toggle('vv-hamburger--open', open);
+  });
+  // Cerrar al navegar
+  menu.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() {
+      menu.classList.remove('vv-nav-open');
+      btn.classList.remove('vv-hamburger--open');
+      btn.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
+</script>
+
 <div id="reglasModal" class="vv-modal-overlay" style="display:none;">
     <div class="vv-modal-box">
         <div class="vv-modal-header">

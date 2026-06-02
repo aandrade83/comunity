@@ -39,8 +39,8 @@ function get_destinatarios(): array
 }
 
 $data = get_destinatarios();
-echo "<pre>";
-print_r($data); exit;
+//echo "<pre>";
+//print_r($data); exit;
 // ──► ASUNTO ───────────────────────────────────────────────────────────────────
 $asunto = 'Invitación a la Plataforma Comunitaria — Condominio Valle Verde';
 

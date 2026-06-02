@@ -23,7 +23,10 @@
           <!-- DERECHA: Botón pegado a la derecha (sobre la X) -->
           <div class="vv-toolbar-right">
             <form action="new_topic.php" method="post" style="margin:0;">
-              <button class="btn btn-success vv-btn-create" type="submit">Crear Nuevo Tema</button>
+              <button class="btn btn-success vv-btn-create" type="submit">
+                <i class="fa fa-plus"></i>
+                <span class="vv-btn-label"> NUEVO TEMA</span>
+              </button>
             </form>
           </div>
 
