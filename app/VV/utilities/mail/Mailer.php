@@ -91,6 +91,7 @@ class Mailer
         $mail->Password      = $this->password;
         $mail->CharSet       = 'UTF-8';
         $mail->SMTPKeepAlive = true; // una sola conexión para todo el batch
+        $mail->Timeout       = 15;  // seg. por operación SMTP — evita colgar indefinidamente
 
         foreach ($recipients as $r) {
             $email = trim($r['email'] ?? '');
