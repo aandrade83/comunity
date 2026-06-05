@@ -17,6 +17,8 @@ require_once ROOT_PATH . '/apps/plantillas/notificacion.php';
 
 function vv_notificar(string $tipo, string $titulo): void
 {
+    set_time_limit(0); // operación de mail masivo — sin timeout de PHP
+
     try {
         db_connect('master');
         $db = $GLOBALS['conn_db']->mysqli_connector;
@@ -33,7 +35,6 @@ function vv_notificar(string $tipo, string $titulo): void
         $st->close();
 
     } catch (\Throwable $e) {
-        // No hay destinatarios o fallo de DB — no romper el flujo principal
         return;
     }
 
@@ -46,25 +47,22 @@ function vv_notificar(string $tipo, string $titulo): void
     ];
     $asunto = $asuntos[$tipo] ?? 'Nueva notificación de Valle Verde';
 
-    $mailer = new \VV\Mail\Mailer();
+    $mailer     = new \VV\Mail\Mailer();
+    $recipients = [];
 
     foreach ($destinatarios as $c) {
-        try {
-            $html = plantilla_notificacion([
+        $recipients[] = [
+            'email' => $c['email'],
+            'name'  => trim($c['nombre'] . ' ' . ($c['apellido'] ?? '')),
+            'html'  => plantilla_notificacion([
                 'id'     => (int)$c['id'],
                 'nombre' => $c['nombre'],
                 'email'  => $c['email'],
                 'tipo'   => $tipo,
                 'titulo' => $titulo,
-            ]);
-            $mailer->send(
-                $c['email'],
-                $asunto,
-                $html,
-                trim($c['nombre'] . ' ' . ($c['apellido'] ?? ''))
-            );
-        } catch (\Throwable $e) {
-            // Fallo individual — continúa con el siguiente
-        }
+            ]),
+        ];
     }
+
+    $mailer->sendBatch($asunto, $recipients);
 }

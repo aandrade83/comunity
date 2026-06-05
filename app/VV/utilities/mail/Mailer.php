@@ -70,4 +70,50 @@ class Mailer
             throw new \RuntimeException('Mailer error: ' . $mail->ErrorInfo, 0, $e);
         }
     }
+
+    /**
+     * Envía correos a múltiples destinatarios reutilizando una sola conexión SMTP.
+     * Cada elemento de $recipients: ['email' => '...', 'name' => '...', 'html' => '...']
+     * Devuelve ['sent' => int, 'errors' => string[]].
+     */
+    public function sendBatch(string $subject, array $recipients): array
+    {
+        $sent   = 0;
+        $errors = [];
+
+        $mail = new PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Host          = $this->host;
+        $mail->Port          = $this->port;
+        $mail->SMTPAuth      = true;
+        $mail->SMTPSecure    = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Username      = $this->username;
+        $mail->Password      = $this->password;
+        $mail->CharSet       = 'UTF-8';
+        $mail->SMTPKeepAlive = true; // una sola conexión para todo el batch
+
+        foreach ($recipients as $r) {
+            $email = trim($r['email'] ?? '');
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "Email inválido omitido: '{$email}'";
+                continue;
+            }
+            try {
+                $mail->clearAddresses();
+                $mail->setFrom($this->username, $this->fromName);
+                $mail->addAddress($email, $r['name'] ?? '');
+                $mail->isHTML(true);
+                $mail->Subject = $subject;
+                $mail->Body    = $r['html'];
+                $mail->AltBody = strip_tags($r['html']);
+                $mail->send();
+                $sent++;
+            } catch (MailerException $e) {
+                $errors[] = "Error enviando a {$email}: " . $mail->ErrorInfo;
+            }
+        }
+
+        $mail->smtpClose();
+        return ['sent' => $sent, 'errors' => $errors];
+    }
 }
