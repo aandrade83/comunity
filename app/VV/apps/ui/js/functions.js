@@ -236,6 +236,7 @@ if (typeof window.jQuery !== "undefined") {
       .off("submit")
       .on("submit", async function (e) {
         e.preventDefault();
+        console.log("[VV] Creando tema — deploy v3");
 
         const title = safeTrim($("#title").val());
         const cat   = safeTrim($("#category").val());
