@@ -52,7 +52,7 @@ act_process_uploads($act_id, 'actividad');
 // Notificar a condominos con email_flag = 1
 try {
     require_once ROOT_PATH . '/utilities/mail/notificaciones.php';
-    vv_notificar('Actividad', $titulo);
+    vv_notificar('Actividad', $titulo, (int)$act_id);
 } catch (\Throwable $_e) { /* no cortar el flujo */ }
 
 header('Location: view.php?id=' . $act_id);

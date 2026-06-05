@@ -189,7 +189,7 @@ switch ($action) {
     // Notificar a condominos con email_flag = 1
     try {
         require_once ROOT_PATH . '/utilities/mail/notificaciones.php';
-        vv_notificar('Tema', $title);
+        vv_notificar('Tema', $title, (int)$topic->vars['id']);
     } catch (\Throwable $_e) { /* no cortar el flujo */ }
 
     json_exit($data);

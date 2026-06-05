@@ -113,7 +113,7 @@ foreach ($questions as $sort => $q) {
 if (!empty($is_new_survey)) {
     try {
         require_once ROOT_PATH . '/utilities/mail/notificaciones.php';
-        vv_notificar('Encuesta', $title);
+        vv_notificar('Encuesta', $title, (int)$survey_id);
     } catch (\Throwable $_e) { /* no cortar el flujo */ }
 }
 
