@@ -87,6 +87,19 @@ function get_active_topics($search = "",$categoria = ""){
 	return get($sql,'_Temas_Active'); 
 }
 
+function get_close_topics($search = "",$categoria = ""){
+	db_connect("master");
+
+	$sql_search	= "";
+	$sql_categoria	= "";
+	if($categoria != "") { $sql_categoria = " AND id_categoria	= $categoria"; }
+	if($search != "") { $sql_search = " AND (titulo like ('%".$search."%') or detalle like ('%".$search."%') )"; }
+	$sql = "SELECT * FROM temas where estado = 2 $sql_search $sql_categoria Order by Fecha Desc";
+	
+	return get($sql,'_Temas_Active'); 
+}
+
+
 function get_pending_topics_total(){
 	db_connect("master");
 	$sql = "SELECT count(*) as 'total' FROM temas where estado = 0";

@@ -40,7 +40,13 @@
  <?
  $s = param('s');
  $c = param('c');
- $temas = get_active_topics($s,$c);
+$st = param('st');
+ if($st == 2){
+        $temas = get_close_topics($s,$c);
+ } else {
+  $temas = get_active_topics($s,$c);
+ }
+
  //echo "<pre>";
  //print_r($temas); exit;
 ?>
@@ -51,13 +57,22 @@
                 <div class="container">
                     <div class="row">
                         
-                        <div class="col-lg-8 breadcrumbf">
+                        <div class="col-lg-8 breadcrumbf" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                          <? if ($s != "") { ?>
-                            <a href="https://lab.lacallecr.com/VV/apps/Forum/index.php">Inicio</a> <span class="diviver"></span> 
-                        <? } ?>   
-                        <? if ($_SESSION['rol'] > 1) { ?>
-                            <a href="pending.php">Pendientes</a> <span class="diviver"></span> 
+                            <a href="<?= BASE_URL ?>/apps/Forum/index.php">Inicio</a> <span class="diviver"></span>
                         <? } ?>
+
+                         <a href="<?= BASE_URL ?>/apps/Forum/index.php"
+                            style="display:inline-block;padding:5px 16px;border-radius:20px;font-weight:600;font-size:13px;text-decoration:none;
+                                   <?= ($st != 2) ? 'background:#337ab7;color:#fff;border:1px solid #337ab7;' : 'background:#fff;color:#555;border:1px solid #ccc;' ?>">
+                           <i class="fa fa-folder-open-o"></i> Activos
+                         </a>
+                         <a href="<?= BASE_URL ?>/apps/Forum/index.php?st=2"
+                            style="display:inline-block;padding:5px 16px;border-radius:20px;font-weight:600;font-size:13px;text-decoration:none;
+                                   <?= ($st == 2) ? 'background:#d9534f;color:#fff;border:1px solid #d9534f;' : 'background:#fff;color:#555;border:1px solid #ccc;' ?>">
+                           <i class="fa fa-lock"></i> Cerrados
+                         </a>
+
                         </div>
                         
                     </div>

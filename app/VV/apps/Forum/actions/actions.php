@@ -475,7 +475,31 @@ case "view":
 
 
 
-default: break;
+// ----------------------------------------
+  // CERRAR TEMA
+  // ----------------------------------------
+  case "topicClose":
+    if (empty($_SESSION['user'])) {
+      json_exit(['control' => "0", 'error' => "Sesión expirada."], 401);
+    }
+
+    $tema_id = isset($_POST['t']) ? (int)$_POST['t'] : (int)param('t');
+
+    if (!$tema_id) {
+      json_exit(['control' => "0", 'error' => "ID de tema inválido"]);
+    }
+
+    db_connect("master");
+    global $conn_db;
+
+    $ok = $conn_db->mysqli_connector->query(
+      "UPDATE temas SET estado = 2 WHERE id = " . $tema_id
+    );
+    json_exit(['control' => $ok ? "1" : "0",
+               'error'   => $ok ? "" : $conn_db->mysqli_connector->error]);
+    break;
+
+  default: break;
 
 }
 ?>

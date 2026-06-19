@@ -545,71 +545,96 @@ function logout() {
 }
 
 function closeTopicControl() {
-  var tema  = jQuery("#topic").val();
-  var reply = jQuery("#reply").val();
+  var tema  = ($("[name='t'], #topic").first().val() || "").trim();
+  var reply = ($("#reply").val() || "").trim();
 
-  if (reply && reply.length > 1) {
-    Swal.fire({
-      title: "¿Estás seguro de Cerrar el caso?",
-      text: "¡No podrás revertir esto!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Sí",
-      cancelButtonText: "No",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        closeTopic();
-        Swal.fire("¡Confirmado!", "La acción ha sido confirmada.", "success");
-      } else {
-        Swal.fire("Cancelado", "La acción ha sido cancelada.", "error");
-      }
-    });
-  } else {
-    Swal.fire({
-      icon: "error",
-      title: "Oops...",
-      text: "Todos los campos son obligatorios",
-      footer: '<a href="#">Favor corregir y volver a enviar</a>',
-    });
+  console.log("[closeTopic] tema=" + tema + " reply.length=" + reply.length);
+
+  if (!tema || reply.length < 1) {
+    swalError("Debe escribir un comentario antes de cerrar el tema.");
+    return;
   }
-}
 
-function closeTopic() {
-  jQuery(".active").hide();
-  jQuery(".closed").show();
+  var swalConf = {
+    title: "¿Estás seguro de Cerrar el caso?",
+    text: "¡No podrás revertir esto!",
+    showCancelButton: true,
+    allowOutsideClick: false,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Sí",
+    cancelButtonText: "No",
+  };
+  swalConf[_swalIconKey] = "warning";
 
-  var tema  = jQuery("#topic").val();
-  var reply = jQuery("#reply").val();
-  const VV2 = vvDetectApp();
+  // Swal v7: .then() recibe true al confirmar; .catch() al cancelar
+  Swal.fire(swalConf)
+    .then(function() {
+      console.log("[closeTopic] confirmado, iniciando peticiones");
 
-  if (reply && reply.length > 1) {
-    var $closeBtn = jQuery("#btn-close-topic, [onclick*='closeTopicControl']").first();
-    if ($closeBtn.length) $closeBtn.prop("disabled", true);
-    fetch(VV2.api + "?ac=topicClose&t=" + encodeURIComponent(tema) + "&reply=" + encodeURIComponent(reply))
-      .then((r) => r.json())
-      .then(function (data) {
-        if (data.control > 0) {
-          Swal.fire({
-            title: "¡Genial!",
-            text: "El Tema ha sido Cerrado",
-            icon: "success",
-            confirmButtonText: "Aceptar",
+      var $btn = $("[onclick*='closeTopicControl']").first();
+      $btn.prop("disabled", true);
+
+      var api  = vvDetectApp().api;
+      var base = vvDetectApp().base;
+
+      // Paso 1: guardar respuesta (igual que botón Guardar)
+      var fd1 = new FormData();
+      fd1.append("t", tema);
+      fd1.append("reply", reply);
+
+      $.ajax({
+        url: api + "?ac=reply",
+        type: "POST",
+        data: fd1,
+        processData: false,
+        contentType: false,
+        success: function(data) {
+          console.log("[closeTopic] reply response:", data);
+          if (!data || String(data.control) !== "1") {
+            $btn.prop("disabled", false);
+            swalError((data && data.error) ? data.error : "No se pudo guardar la respuesta");
+            return;
+          }
+          // Paso 2: cerrar tema (solo UPDATE estado=2)
+          var fd2 = new FormData();
+          fd2.append("t", tema);
+          $.ajax({
+            url: api + "?ac=topicClose",
+            type: "POST",
+            data: fd2,
+            processData: false,
+            contentType: false,
+            success: function(data2) {
+              console.log("[closeTopic] topicClose response:", data2);
+              if (data2 && String(data2.control) === "1") {
+                var okConf = { title: "¡Genial!", text: "El Tema ha sido Cerrado", confirmButtonText: "Aceptar" };
+                okConf[_swalIconKey] = "success";
+                Swal.fire(okConf).then(function() {
+                  window.location.href = base + "index.php";
+                }).catch(function() {
+                  window.location.href = base + "index.php";
+                });
+              } else {
+                $btn.prop("disabled", false);
+                swalError((data2 && data2.error) ? data2.error : "Hubo un error al cerrar el tema");
+              }
+            },
+            error: function(xhr) {
+              $btn.prop("disabled", false);
+              swalError("Error de conexión al cerrar tema: " + xhr.status);
+            }
           });
-          setTimeout(function () {
-            window.location.href = VV2.base + "index.php";
-          }, 1500);
-        } else {
-          if ($closeBtn.length) $closeBtn.prop("disabled", false);
-          Swal.fire({ icon: "error", title: "Oops...", text: "Hubo un error" });
+        },
+        error: function(xhr) {
+          $btn.prop("disabled", false);
+          swalError("Error de conexión al guardar respuesta: " + xhr.status);
         }
-      })
-      .catch(function() {
-        if ($closeBtn.length) $closeBtn.prop("disabled", false);
-        alert("A system error was detected");
       });
-  }
+    })
+    .catch(function() {
+      // Usuario canceló — no hacer nada
+    });
 }
 
 function viewControl() {
