@@ -128,6 +128,11 @@ function login(user, pass) {
       console.log(data.login);
 
       if (data.login == 1) {
+        // Indicar al browser que guarde las credenciales (Chrome, Edge, Safari 15+)
+        if (window.PasswordCredential) {
+          var cred = new PasswordCredential({ id: user, password: pass, name: 'Filial ' + user });
+          navigator.credentials.store(cred).catch(function() {});
+        }
         if (data.total >= 1) {
           window.location.href = '/VV/apps/Forum/pending.php';
         } else {

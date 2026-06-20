@@ -22,14 +22,14 @@ require_once($_SERVER['DOCUMENT_ROOT'] . "/VV/utilities/includes.php");
 <body>
 
     <div class="wrapper">
-        <form action="">
+        <form action="" method="post">
             <h1>VALLE VERDE</h1>
             <div class="input-box">
-                <input type="text" id="user" placeholder="Filial" required>
+                <input type="text" id="user" placeholder="Filial" required autocomplete="username">
                 <!-- <i class='bx bxs-user'></i> -->
             </div>
             <div class="input-box" style="position:relative;">
-                <input type="password" id="pass" placeholder="Password" required>
+                <input type="password" id="pass" placeholder="Password" required autocomplete="current-password">
                 <span id="togglePass" title="Mostrar/Ocultar contraseña"
                       style="position:absolute;right:14px;top:50%;transform:translateY(-50%);
                              cursor:pointer;color:#aaa;font-size:16px;user-select:none;">👁</span>
