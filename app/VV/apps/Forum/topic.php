@@ -1,6 +1,7 @@
 <?
 
  include('../ui/main_head.php');
+ require_once __DIR__ . '/../../utilities/lib/forum_render.php';
 
 $tema = get_topic(param('t'));
 
@@ -148,7 +149,7 @@ function render_adjuntos_block($adjuntosList, $title = 'Adjuntos'){
               <input id="user" type="hidden" value="<? echo $id_user ?>">
 
               <h2><a href="#"><? echo $tema->vars['titulo'] ?></a></h2>
-              <p><? echo $tema->vars['detalle'] ?></p>
+              <div class="post-content"><? echo vv_render_post($tema->vars['detalle']) ?></div>
 
               <?
                 // ✅ Adjuntos del tema
@@ -229,7 +230,7 @@ function render_adjuntos_block($adjuntosList, $title = 'Adjuntos'){
                 </div>
 
                 <div class="posttext pull-left">
-                  <p><? echo nl2br($r->vars['detalle']) ?></p>
+                  <div class="post-content"><? echo vv_render_post($r->vars['detalle']) ?></div>
 
                   <?
                     // ✅ Adjuntos de la respuesta

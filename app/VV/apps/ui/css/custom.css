@@ -448,6 +448,22 @@ td.chbox {
     line-height: 25px;
 }
 
+/* Contenido Markdown de temas/respuestas (vv_render_post) */
+.post .posttext .post-content { word-wrap: break-word; overflow-wrap: break-word; }
+.post .posttext .post-content p { margin: 0 0 12px; }
+.post .posttext .post-content ul,
+.post .posttext .post-content ol { margin: 0 0 12px; padding-left: 22px; }
+.post .posttext .post-content li { margin-bottom: 2px; }
+.post .posttext .post-content strong { color: #363838; font-weight: 600; }
+.post .posttext .post-content h1,
+.post .posttext .post-content h2,
+.post .posttext .post-content h3,
+.post .posttext .post-content h4 { font-size: 16px; font-weight: 600; color: #363838; margin: 16px 0 8px; }
+.post .posttext .post-content blockquote { margin: 0 0 12px; padding: 4px 12px; border-left: 3px solid #e6e6e6; font-size: 14px; }
+.post .posttext .post-content pre,
+.post .posttext .post-content code { white-space: pre-wrap; font-size: 13px; }
+.post .posttext .post-content > :last-child { margin-bottom: 0; }
+
 .post .postinfo {
     width: 15%;
     border-left: solid 1px #f1f1f1;
