@@ -463,6 +463,74 @@ function text_preview($text, $num, $tags = ''){
 }
 
 
+/**
+ * Extracto en texto plano para vistas previas (p. ej. listado del foro).
+ *
+ * - Convierte HTML antiguo (<br>, <p>) a saltos de línea y elimina el resto de etiquetas.
+ * - Quita símbolos Markdown visibles (**, __, #, enlaces, listas, citas...).
+ * - Corta en un límite de palabra, seguro para UTF-8 (tildes, ñ, ₡).
+ * - Conserva saltos de párrafo (colapsa líneas vacías) para mostrar con white-space: pre-line.
+ *
+ * Devuelve TEXTO PLANO SIN ESCAPAR: escapar con htmlspecialchars() al imprimir.
+ * No modifica el contenido almacenado.
+ *
+ * @param string    $text       Contenido original.
+ * @param int       $limit      Máximo de caracteres (no bytes).
+ * @param bool|null &$truncated true si se recortó contenido.
+ */
+function vv_text_excerpt($text, $limit = 500, &$truncated = null){
+	$truncated = false;
+	$text = str_replace(array("\r\n", "\r"), "\n", (string)$text);
+
+	// HTML antiguo -> texto
+	$text = preg_replace('~<(script|style)\b[^>]*>.*?</\1\s*>~is', '', $text);
+	$text = preg_replace('~<br\s*/?>~i', "\n", $text);
+	$text = preg_replace('~</?(?:p|div|li|h[1-6])\b[^>]*>~i', "\n", $text);
+	// Solo etiquetas reales (no strip_tags: borraría todo tras un "<" suelto, p. ej. "<5 casas")
+	$text = preg_replace('~<!--.*?-->|</?[a-z][a-z0-9]*\b[^>]*>~is', '', $text);
+	$text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+	// Markdown -> texto
+	$text = preg_replace('~!\[([^\]]*)\]\([^)]*\)~u', '$1', $text);      // imágenes
+	$text = preg_replace('~\[([^\]]+)\]\([^)]*\)~u', '$1', $text);       // enlaces
+	$text = preg_replace('~^[ \t]*(?:[-*_][ \t]*){3,}$~mu', '', $text);  // separadores ---
+	$text = preg_replace('~^[ \t]{0,3}#{1,6}[ \t]+~mu', '', $text);      // encabezados
+	$text = preg_replace('~^[ \t]*>[ \t]?~mu', '', $text);               // citas
+	$text = preg_replace('~^([ \t]*)[-*+][ \t]+~mu', '$1• ', $text);     // viñetas
+	$text = preg_replace('~(\*\*|__)(.+?)\1~u', '$2', $text);            // negrita
+	$text = preg_replace('~(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])~u', '$1', $text); // *cursiva*
+	$text = preg_replace('~(?<![\w_])_(?!\s)(.+?)(?<!\s)_(?![\w_])~u', '$1', $text);   // _cursiva_
+	$text = preg_replace('/~~(.+?)~~/u', '$1', $text);                   // tachado
+	$text = str_replace(array('**', '`'), '', $text);                    // restos sueltos
+
+	// Espacios: recortar cada línea y colapsar líneas vacías consecutivas
+	$text = preg_replace('~[ \t\x{00A0}]+~u', ' ', $text);
+	$text = preg_replace('~ *\n *~', "\n", $text);
+	$text = preg_replace('~\n{2,}~', "\n", $text);
+	$text = trim($text);
+
+	if(function_exists('mb_strlen')){
+		$len = mb_strlen($text, 'UTF-8');
+	} else {
+		$len = preg_match_all('/./us', $text);
+	}
+	if($len <= $limit){
+		return $text;
+	}
+
+	$truncated = true;
+	$cut = function_exists('mb_substr')
+		? mb_substr($text, 0, $limit, 'UTF-8')
+		: implode('', array_slice(preg_split('//u', $text, -1, PREG_SPLIT_NO_EMPTY), 0, $limit));
+
+	// Retroceder al último espacio/salto para no partir palabras
+	if(preg_match('~^(.*)\s\S*$~us', $cut, $m) && $m[1] !== ''){
+		$cut = $m[1];
+	}
+	return rtrim($cut, " \n,;:.-") . '...';
+}
+
+
 /////////////////////////////////////////
 /////////////////////////////////////////
 

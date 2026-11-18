@@ -150,7 +150,14 @@ $st = param('st');
                                              <i class="fa fa-eye"></i>
                                            </a>
                                          </h2>
-                                        <p><? echo $tema->vars['detalle'] ?></p>
+                                        <?
+                                         $vv_cut = false;
+                                         $vv_preview = vv_text_excerpt($tema->vars['detalle'], 500, $vv_cut);
+                                         // También hay "más" si el extracto excede las 7 líneas visibles
+                                         $vv_more = $vv_cut || substr_count($vv_preview, "\n") >= 7;
+                                        ?>
+                                        <p class="vv-preview"><?= htmlspecialchars($vv_preview, ENT_QUOTES, 'UTF-8') ?></p>
+                                        <a href="topic.php?t=<? echo $tema->vars['id'] ?>" class="vv-preview-more"<?= $vv_more ? '' : ' hidden' ?>>Ver más...</a>
                                     </div>
                                     <div class="clearfix"></div>
                                 </div>
@@ -237,6 +244,23 @@ $st = param('st');
 
 
             </section>
+
+  <script>
+   // Muestra "Ver más..." si el CSS recortó el extracto (pantallas angostas).
+   (function () {
+     function vvCheckPreviews() {
+       var items = document.querySelectorAll('.vv-preview');
+       for (var i = 0; i < items.length; i++) {
+         var more = items[i].nextElementSibling;
+         if (more && more.classList.contains('vv-preview-more') && items[i].scrollHeight > items[i].clientHeight + 1) {
+           more.hidden = false;
+         }
+       }
+     }
+     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', vvCheckPreviews); } else { vvCheckPreviews(); }
+     window.addEventListener('resize', vvCheckPreviews);
+   })();
+  </script>
 
   <?
    include('../ui/partials/footer.php');

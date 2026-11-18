@@ -464,6 +464,22 @@ td.chbox {
 .post .posttext .post-content code { white-space: pre-wrap; font-size: 13px; }
 .post .posttext .post-content > :last-child { margin-bottom: 0; }
 
+/* Vista previa de temas en el listado del foro (máx. 7 líneas) */
+.post .posttext .vv-preview {
+    margin: 0;
+    white-space: pre-line;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 7;
+    line-clamp: 7;
+    overflow: hidden;
+    max-height: 175px; /* 7 x line-height 25px: respaldo sin line-clamp */
+}
+.post .posttext .vv-preview-more { display: inline-block; margin-top: 4px; font-size: 13px; color: #428bca; }
+.post .posttext .vv-preview-more[hidden] { display: none; }
+
 .post .postinfo {
     width: 15%;
     border-left: solid 1px #f1f1f1;
